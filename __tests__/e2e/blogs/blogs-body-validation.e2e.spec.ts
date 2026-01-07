@@ -8,12 +8,14 @@ import { createBlog } from '../../utils/blogs/create-blog';
 import { BLOGS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
+import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
 
 describe('Blog API body validation check', () => {
   const app = express();
   setupApp(app);
 
   const correctTestBlogData: TBlogInputDto = getBlogDto();
+  const adminToken = generateBasicAuthToken();
 
   beforeAll(async () => {
     await clearDb(app);
@@ -27,6 +29,7 @@ describe('Blog API body validation check', () => {
     };
     const invalidDataSetRequest1 = await request(app)
       .post(BLOGS_PATH)
+      .set('Authorization', generateBasicAuthToken())
       .send(invalidDataSet1)
       .expect(EHttpStatus.BadRequest_400);
 
@@ -39,6 +42,7 @@ describe('Blog API body validation check', () => {
     };
     const invalidDataSetRequest2 = await request(app)
       .post(BLOGS_PATH)
+      .set('Authorization', generateBasicAuthToken())
       .send(invalidDataSet2)
       .expect(EHttpStatus.BadRequest_400);
 
@@ -51,6 +55,7 @@ describe('Blog API body validation check', () => {
     };
     const invalidDataSetRequest3 = await request(app)
       .post(BLOGS_PATH)
+      .set('Authorization', generateBasicAuthToken())
       .send(invalidDataSet3)
       .expect(EHttpStatus.BadRequest_400);
 
@@ -70,6 +75,7 @@ describe('Blog API body validation check', () => {
     };
     const invalidDataSetRequest1 = await request(app)
       .put(`${BLOGS_PATH}/${createdBlog.id}`)
+      .set('Authorization', generateBasicAuthToken())
       .send(invalidDataSet1)
       .expect(EHttpStatus.BadRequest_400);
 
@@ -82,6 +88,7 @@ describe('Blog API body validation check', () => {
     };
     const invalidDataSetRequest2 = await request(app)
       .put(`${BLOGS_PATH}/${createdBlog.id}`)
+      .set('Authorization', generateBasicAuthToken())
       .send(invalidDataSet2)
       .expect(EHttpStatus.BadRequest_400);
 
@@ -94,6 +101,7 @@ describe('Blog API body validation check', () => {
     };
     const invalidDataSetRequest3 = await request(app)
       .put(`${BLOGS_PATH}/${createdBlog.id}`)
+      .set('Authorization', generateBasicAuthToken())
       .send(invalidDataSet3)
       .expect(EHttpStatus.BadRequest_400);
 

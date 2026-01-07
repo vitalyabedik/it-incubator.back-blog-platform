@@ -5,6 +5,7 @@ import { TBlogView } from '../../../src/blogs/types';
 import { getBlogDto } from './get-blog-dto';
 import { BLOGS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
+import { generateBasicAuthToken } from '../generate-admin-auth-token';
 
 export const createBlog = async (
   app: Express,
@@ -16,6 +17,7 @@ export const createBlog = async (
 
   const createdBlogResponse = await request(app)
     .post(BLOGS_PATH)
+    .set('Authorization', generateBasicAuthToken())
     .send(testBlogData)
     .expect(EHttpStatus.Created_201);
 
