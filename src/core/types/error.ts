@@ -1,9 +1,9 @@
-export type TAPIErrorResult<T> = {
-  errorsMessages: TFieldError<T>[];
+export type TAPIErrorResult = {
+  errorsMessages: TFieldError[];
 };
 
-export type TFieldError<T> = {
-  field: T;
+export type TFieldError = {
+  field: string;
   message: string;
 };
 

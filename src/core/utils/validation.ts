@@ -1,7 +1,7 @@
 import { TAPIErrorResult, TFieldError } from '../types/error';
 
-export const createErrorMessages = <T>(
-  errors: TFieldError<T>[],
-): TAPIErrorResult<T> => ({
+export const createErrorMessages = (
+  errors: TFieldError[],
+): TAPIErrorResult => ({
   errorsMessages: errors,
 });
