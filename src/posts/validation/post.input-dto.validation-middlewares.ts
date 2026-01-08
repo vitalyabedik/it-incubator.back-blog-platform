@@ -23,7 +23,7 @@ const shortDescriptionValidation = body(EPostValidationField.ShortDescription)
     min: FIELD_REQUIRED_LENGTH,
     max: POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH,
   })
-  .withMessage(validationMessages.shortDescriptionType);
+  .withMessage(validationMessages.shortDescriptionLength);
 
 const contentValidation = body(EPostValidationField.Content)
   .isString()

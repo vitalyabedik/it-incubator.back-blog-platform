@@ -5,13 +5,15 @@ import { EHttpStatus } from '../../../src/core/constants/http';
 import { TPostInputDto } from '../../../src/posts/dto/posts.input-dto';
 import { generateBasicAuthToken } from '../generate-admin-auth-token';
 import { getPostDto } from './get-post-dto';
+import { createBlog } from '../blogs/create-blog';
 
 export const updatePost = async (
   app: Express,
   postId: string,
   postDto?: TPostInputDto,
 ): Promise<void> => {
-  const defaultPostData: TPostInputDto = getPostDto();
+  const createdBlog = await createBlog(app);
+  const defaultPostData: TPostInputDto = getPostDto(createdBlog.id);
 
   const testPostData = { ...defaultPostData, ...postDto };
 

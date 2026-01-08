@@ -2,7 +2,6 @@ import request from 'supertest';
 import express from 'express';
 import { setupApp } from './../../../src/setup-app';
 import { clearDb } from '../../utils/clear-db';
-import { createBlog } from '../../utils/blogs/create-blog';
 import { POSTS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
 import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
@@ -12,6 +11,7 @@ import { createPost } from '../../utils/posts/create-post';
 import { updatePost } from '../../utils/posts/update-post';
 import { getPostById } from '../../utils/posts/get-post-by-id';
 import { TPostView } from '../../../src/posts/types';
+import { createBlog } from '../../utils/blogs/create-blog';
 
 describe('Post API', () => {
   const app = express();
@@ -24,20 +24,24 @@ describe('Post API', () => {
   });
 
   it('POST /api/posts; должен создавать post', async () => {
+    const createdBlog = await createBlog(app);
+
     const newPost: TPostInputDto = {
-      ...getPostDto(),
+      ...getPostDto(createdBlog.id),
       title: 'new post title',
       shortDescription: 'new post shortDescription',
       content: 'new post content',
-      blogId: 'new-blog-id',
+      blogId: createdBlog.id,
     };
 
-    await createPost(app, newPost);
+    await createPost(app, createdBlog, newPost);
   });
 
   it('GET /api/posts; должен возвращать post list', async () => {
-    await createPost(app);
-    await createPost(app);
+    const createdBlog = await createBlog(app);
+
+    await createPost(app, createdBlog);
+    await createPost(app, createdBlog);
 
     const response = await request(app)
       .get(POSTS_PATH)
@@ -48,7 +52,8 @@ describe('Post API', () => {
   });
 
   it('GET /api/posts/:id; должен возвращать post по id', async () => {
-    const createdPost = await createPost(app);
+    const createdBlog = await createBlog(app);
+    const createdPost = await createPost(app, createdBlog);
 
     const post = await getPostById(app, createdPost.id);
 
@@ -60,13 +65,13 @@ describe('Post API', () => {
 
   it('PUT /api/posts/:id; должен корректно изменять post по id', async () => {
     const createdBlog = await createBlog(app);
-    const createdPost = await createPost(app);
+    const createdPost = await createPost(app, createdBlog);
 
     const postUpdateData: TPostInputDto = {
       title: 'updated title',
       shortDescription: 'updated shortDescription',
       content: 'updated content',
-      blogId: createdBlog.id,
+      blogId: createdPost.blogId,
     };
 
     await updatePost(app, createdPost.id, postUpdateData);
@@ -76,15 +81,16 @@ describe('Post API', () => {
     const expectedPostData: TPostView = {
       ...postUpdateData,
       id: createdPost.id,
-      blogId: createdBlog.id,
-      blogName: '',
+      blogId: createdPost.blogId,
+      blogName: createdBlog.name,
     };
 
     expect(postResponse).toEqual(expectedPostData);
   });
 
   it('DELETE /api/posts/:id; должен удалять post по id', async () => {
-    const createdPost = await createPost(app);
+    const createdBlog = await createBlog(app);
+    const createdPost = await createPost(app, createdBlog);
 
     await request(app)
       .delete(`${POSTS_PATH}/${createdPost.id}`)

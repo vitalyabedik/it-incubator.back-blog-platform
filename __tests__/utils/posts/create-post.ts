@@ -6,14 +6,20 @@ import { TPostInputDto } from '../../../src/posts/dto/posts.input-dto';
 import { TPostView } from '../../../src/posts/types';
 import { generateBasicAuthToken } from '../generate-admin-auth-token';
 import { getPostDto } from './get-post-dto';
+import { TBlogView } from '../../../src/blogs/types';
 
 export const createPost = async (
   app: Express,
+  blogView: TBlogView,
   postDto?: TPostInputDto,
 ): Promise<TPostView> => {
-  const defaultPostData: TPostInputDto = getPostDto();
+  const defaultPostData: TPostInputDto = await getPostDto(blogView.id);
 
-  const testPostData = { ...defaultPostData, ...postDto };
+  const testPostData = {
+    ...defaultPostData,
+    ...postDto,
+    blogName: blogView.name,
+  };
 
   const createdPostResponse = await request(app)
     .post(POSTS_PATH)

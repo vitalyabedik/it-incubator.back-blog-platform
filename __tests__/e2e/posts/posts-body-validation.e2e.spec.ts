@@ -15,12 +15,14 @@ import {
   POST_TITLE_MAX_FIELD_LENGTH,
 } from '../../../src/posts/constants/validation';
 import { TPostView } from '../../../src/posts/types';
+import { createBlog } from '../../utils/blogs/create-blog';
 
 describe('Post API body validation check', () => {
   const app = express();
   setupApp(app);
 
-  const correctTestPostData: TPostInputDto = getPostDto();
+  const blogId = 'new blog id';
+  const correctTestPostData: TPostInputDto = getPostDto(blogId);
   const adminToken = generateBasicAuthToken();
   const errorsLength = Object.keys(correctTestPostData).length;
 
@@ -82,7 +84,8 @@ describe('Post API body validation check', () => {
   });
 
   it('PUT /api/posts/:id; не должен изменять post с некорректным body', async () => {
-    const createdPost = await createPost(app, correctTestPostData);
+    const createdBlog = await createBlog(app);
+    const createdPost = await createPost(app, createdBlog);
 
     const invalidDataSet1: TPostInputDto = {
       title: '',
@@ -137,7 +140,8 @@ describe('Post API body validation check', () => {
     const expectedPostData: TPostView = {
       ...correctTestPostData,
       id: createdPost.id,
-      blogName: '',
+      blogId: createdBlog.id,
+      blogName: createdBlog.name,
     };
 
     expect(postResponse).toEqual(expectedPostData);
