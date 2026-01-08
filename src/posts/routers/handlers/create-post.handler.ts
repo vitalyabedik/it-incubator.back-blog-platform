@@ -12,12 +12,7 @@ export const createPostHandler = (
 ) => {
   const { blogId, content, shortDescription, title } = req.body;
 
-  const blog = blogsRepository.findById(blogId);
-
-  if (!blog) {
-    res.sendStatus(EHttpStatus.NotFound_404);
-    return;
-  }
+  const blog = blogsRepository.findById(blogId)!;
 
   const { name } = blog;
   const newPost: TPostView = {
