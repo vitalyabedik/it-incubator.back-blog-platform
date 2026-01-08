@@ -8,13 +8,14 @@ export const deleteBlogHandler = (
   req: TRequestWithParams<TDeleteBlogParams>,
   res: Response,
 ) => {
-  const blog = blogsRepository.findById(req.params.id);
+  const blogId = req.params.id;
+  const blog = blogsRepository.findById(blogId);
 
   if (!blog) {
     res.sendStatus(EHttpStatus.NotFound_404);
     return;
   }
 
-  blogsRepository.delete(req.params.id);
+  blogsRepository.delete(blogId);
   res.sendStatus(EHttpStatus.NoContent_204);
 };

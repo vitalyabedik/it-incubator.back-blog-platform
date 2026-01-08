@@ -10,6 +10,7 @@ import { EHttpStatus } from '../../../src/core/constants/http';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
 import { updateBlog } from '../../utils/blogs/update-blog';
 import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
+import { TBlogView } from '../../../src/blogs/types';
 
 describe('Blog API', () => {
   const app = express();
@@ -67,10 +68,12 @@ describe('Blog API', () => {
 
     const blogResponse = await getBlogById(app, createdBlog.id);
 
-    expect(blogResponse).toEqual({
+    const expectedBlogData: TBlogView = {
       ...blogUpdateData,
       id: createdBlog.id,
-    });
+    };
+
+    expect(blogResponse).toEqual(expectedBlogData);
   });
 
   it('DELETE /api/blogs/:id; должен удалять blog по id', async () => {
