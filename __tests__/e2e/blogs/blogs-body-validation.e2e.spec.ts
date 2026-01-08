@@ -40,7 +40,7 @@ describe('Blog API body validation check', () => {
       .send(invalidDataSet1)
       .expect(EHttpStatus.BadRequest_400);
 
-    expect(invalidDataSetRequest1.body.errorMessages).toHaveLength(
+    expect(invalidDataSetRequest1.body.errorsMessages).toHaveLength(
       errorsLength,
     );
 
@@ -55,7 +55,7 @@ describe('Blog API body validation check', () => {
       .send(invalidDataSet2)
       .expect(EHttpStatus.BadRequest_400);
 
-    expect(invalidDataSetRequest2.body.errorMessages).toHaveLength(
+    expect(invalidDataSetRequest2.body.errorsMessages).toHaveLength(
       errorsLength,
     );
 
@@ -70,7 +70,7 @@ describe('Blog API body validation check', () => {
       .send(invalidDataSet3)
       .expect(EHttpStatus.BadRequest_400);
 
-    expect(invalidDataSetRequest3.body.errorMessages).toHaveLength(
+    expect(invalidDataSetRequest3.body.errorsMessages).toHaveLength(
       errorsLength,
     );
 
@@ -92,7 +92,7 @@ describe('Blog API body validation check', () => {
       .send(invalidDataSet1)
       .expect(EHttpStatus.BadRequest_400);
 
-    expect(invalidDataSetRequest1.body.errorMessages).toHaveLength(
+    expect(invalidDataSetRequest1.body.errorsMessages).toHaveLength(
       errorsLength,
     );
 
@@ -107,7 +107,7 @@ describe('Blog API body validation check', () => {
       .send(invalidDataSet2)
       .expect(EHttpStatus.BadRequest_400);
 
-    expect(invalidDataSetRequest2.body.errorMessages).toHaveLength(
+    expect(invalidDataSetRequest2.body.errorsMessages).toHaveLength(
       errorsLength,
     );
 
@@ -122,7 +122,7 @@ describe('Blog API body validation check', () => {
       .send(invalidDataSet3)
       .expect(EHttpStatus.BadRequest_400);
 
-    expect(invalidDataSetRequest3.body.errorMessages).toHaveLength(
+    expect(invalidDataSetRequest3.body.errorsMessages).toHaveLength(
       errorsLength,
     );
 
