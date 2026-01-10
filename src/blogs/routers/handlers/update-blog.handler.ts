@@ -13,10 +13,10 @@ export const updateBlogHandler = (
   const blog = blogsRepository.findById(blogId);
 
   if (!blog) {
-    res.sendStatus(EHttpStatus.NotFound_404);
+    res.sendStatus(EHttpStatus.NOT_FOUND_404);
     return;
   }
 
   blogsRepository.update(blogId, req.body);
-  res.sendStatus(EHttpStatus.NoContent_204);
+  res.sendStatus(EHttpStatus.NO_CONTENT_204);
 };

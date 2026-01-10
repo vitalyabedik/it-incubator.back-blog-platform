@@ -19,7 +19,7 @@ export const createBlog = async (
     .post(BLOGS_PATH)
     .set('Authorization', generateBasicAuthToken())
     .send(testBlogData)
-    .expect(EHttpStatus.Created_201);
+    .expect(EHttpStatus.CREATED_201);
 
   return createdBlogResponse.body;
 };

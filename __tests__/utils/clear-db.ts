@@ -6,6 +6,6 @@ import { EHttpStatus } from '../../src/core/constants/http';
 export const clearDb = async (app: Express) => {
   await request(app)
     .delete(TESTS_PATH_RESET_DB)
-    .expect(EHttpStatus.NoContent_204);
+    .expect(EHttpStatus.NO_CONTENT_204);
   return;
 };

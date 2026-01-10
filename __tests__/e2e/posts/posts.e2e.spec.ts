@@ -45,7 +45,7 @@ describe('Post API', () => {
 
     const response = await request(app)
       .get(POSTS_PATH)
-      .expect(EHttpStatus.Ok_200);
+      .expect(EHttpStatus.OK_200);
 
     expect(response.body).toBeInstanceOf(Array);
     expect(response.body.length).toBeGreaterThanOrEqual(2);
@@ -95,10 +95,10 @@ describe('Post API', () => {
     await request(app)
       .delete(`${POSTS_PATH}/${createdPost.id}`)
       .set('Authorization', adminToken)
-      .expect(EHttpStatus.NoContent_204);
+      .expect(EHttpStatus.NO_CONTENT_204);
 
     await request(app)
       .get(`${POSTS_PATH}/${createdPost.id}`)
-      .expect(EHttpStatus.NotFound_404);
+      .expect(EHttpStatus.NOT_FOUND_404);
   });
 });

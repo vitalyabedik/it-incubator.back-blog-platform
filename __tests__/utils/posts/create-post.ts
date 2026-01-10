@@ -25,7 +25,7 @@ export const createPost = async (
     .post(POSTS_PATH)
     .set('Authorization', generateBasicAuthToken())
     .send(testPostData)
-    .expect(EHttpStatus.Created_201);
+    .expect(EHttpStatus.CREATED_201);
 
   return createdPostResponse.body;
 };

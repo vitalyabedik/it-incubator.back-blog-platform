@@ -11,7 +11,7 @@ export const getPostHandler = (
   const post = postsRepository.findById(req.params.id);
 
   if (!post) {
-    res.sendStatus(EHttpStatus.NotFound_404);
+    res.sendStatus(EHttpStatus.NOT_FOUND_404);
     return;
   }
 

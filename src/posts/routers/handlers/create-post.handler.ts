@@ -25,5 +25,5 @@ export const createPostHandler = (
   };
 
   postsRepository.create(newPost);
-  res.status(EHttpStatus.Created_201).send(newPost);
+  res.status(EHttpStatus.CREATED_201).send(newPost);
 };

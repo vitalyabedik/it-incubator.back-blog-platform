@@ -38,7 +38,7 @@ describe('Blog API body validation check', () => {
       .post(BLOGS_PATH)
       .set('Authorization', adminToken)
       .send(invalidDataSet1)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest1.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -53,7 +53,7 @@ describe('Blog API body validation check', () => {
       .post(BLOGS_PATH)
       .set('Authorization', adminToken)
       .send(invalidDataSet2)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest2.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -68,7 +68,7 @@ describe('Blog API body validation check', () => {
       .post(BLOGS_PATH)
       .set('Authorization', adminToken)
       .send(invalidDataSet3)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest3.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -90,7 +90,7 @@ describe('Blog API body validation check', () => {
       .put(`${BLOGS_PATH}/${createdBlog.id}`)
       .set('Authorization', generateBasicAuthToken())
       .send(invalidDataSet1)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest1.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -105,7 +105,7 @@ describe('Blog API body validation check', () => {
       .put(`${BLOGS_PATH}/${createdBlog.id}`)
       .set('Authorization', adminToken)
       .send(invalidDataSet2)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest2.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -120,7 +120,7 @@ describe('Blog API body validation check', () => {
       .put(`${BLOGS_PATH}/${createdBlog.id}`)
       .set('Authorization', adminToken)
       .send(invalidDataSet3)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest3.body.errorsMessages).toHaveLength(
       errorsLength,

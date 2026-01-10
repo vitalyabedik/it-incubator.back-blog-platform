@@ -21,7 +21,7 @@ export const updatePost = async (
     .put(`${POSTS_PATH}/${postId}`)
     .set('Authorization', generateBasicAuthToken())
     .send(testPostData)
-    .expect(EHttpStatus.NoContent_204);
+    .expect(EHttpStatus.NO_CONTENT_204);
 
   return updatedPostResponse.body;
 };

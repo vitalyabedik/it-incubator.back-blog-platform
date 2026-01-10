@@ -13,10 +13,10 @@ export const updatePostHandler = (
   const post = postsRepository.findById(postId);
 
   if (!post) {
-    res.sendStatus(EHttpStatus.NotFound_404);
+    res.sendStatus(EHttpStatus.NOT_FOUND_404);
     return;
   }
 
   postsRepository.update(postId, req.body);
-  res.sendStatus(EHttpStatus.NoContent_204);
+  res.sendStatus(EHttpStatus.NO_CONTENT_204);
 };

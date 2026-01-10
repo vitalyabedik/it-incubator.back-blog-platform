@@ -1,6 +1,6 @@
 export enum EPostValidationField {
-  Title = 'title',
-  ShortDescription = 'shortDescription',
-  Content = 'content',
-  BlogId = 'blogId',
+  TITLE = 'title',
+  SHORT_DESCRIPTION = 'shortDescription',
+  CONTENT = 'content',
+  BLOG_ID = 'blogId',
 }

@@ -12,10 +12,10 @@ export const deletePostHandler = (
   const post = postsRepository.findById(postId);
 
   if (!post) {
-    res.sendStatus(EHttpStatus.NotFound_404);
+    res.sendStatus(EHttpStatus.NOT_FOUND_404);
     return;
   }
 
   postsRepository.delete(postId);
-  res.sendStatus(EHttpStatus.NoContent_204);
+  res.sendStatus(EHttpStatus.NO_CONTENT_204);
 };

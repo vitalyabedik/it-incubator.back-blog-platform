@@ -10,7 +10,7 @@ export const getBlogById = async (
 ): Promise<TBlogView> => {
   const blogResponse = await request(app)
     .get(`${BLOGS_PATH}/${blogId}`)
-    .expect(EHttpStatus.Ok_200);
+    .expect(EHttpStatus.OK_200);
 
   return blogResponse.body;
 };

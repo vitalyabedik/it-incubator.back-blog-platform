@@ -9,5 +9,5 @@ testingRouter.delete(ERoutePath.Reset_DB, (_: Request, res: Response) => {
   db.blogs = [];
   db.posts = [];
 
-  res.sendStatus(EHttpStatus.NoContent_204);
+  res.sendStatus(EHttpStatus.NO_CONTENT_204);
 });

@@ -19,5 +19,5 @@ export const createBlogHandler = (
   };
 
   blogsRepository.create(newBlog);
-  res.status(EHttpStatus.Created_201).send(newBlog);
+  res.status(EHttpStatus.CREATED_201).send(newBlog);
 };

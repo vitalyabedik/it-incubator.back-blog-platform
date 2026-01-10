@@ -11,7 +11,7 @@ export const getBlogHandler = (
   const blog = blogsRepository.findById(req.params.id);
 
   if (!blog) {
-    res.sendStatus(EHttpStatus.NotFound_404);
+    res.sendStatus(EHttpStatus.NOT_FOUND_404);
     return;
   }
 
