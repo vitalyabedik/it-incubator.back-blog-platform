@@ -16,6 +16,7 @@
   "author": "Bedik Vitali",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-validator": "^7.3.1",
     "mongodb": "^7.0.0"
