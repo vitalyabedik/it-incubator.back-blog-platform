@@ -19,7 +19,7 @@ export const updateBlog = async (
     .put(`${BLOGS_PATH}/${blogId}`)
     .set('Authorization', generateBasicAuthToken())
     .send(testBlogData)
-    .expect(EHttpStatus.NoContent_204);
+    .expect(EHttpStatus.NO_CONTENT_204);
 
   return updatedBlogResponse.body;
 };

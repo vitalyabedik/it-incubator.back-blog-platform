@@ -1,3 +1,6 @@
-import { TPostView } from '../types';
+import { TPostViewModel } from '../types';
 
-export type TPostInputDto = Omit<TPostView, 'id' | 'blogName'>;
+export type TPostInputDto = Omit<
+  TPostViewModel,
+  'id' | 'blogName' | 'createdAt'
+>;

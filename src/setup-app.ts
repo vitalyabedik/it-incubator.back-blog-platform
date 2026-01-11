@@ -16,7 +16,7 @@ export const setupApp = (app: Express) => {
   app.use(express.json());
 
   app.get(ERoutePath.Main, (_, res) => {
-    res.status(EHttpStatus.Ok_200).send(MAIN_MESSAGE);
+    res.status(EHttpStatus.OK_200).send(MAIN_MESSAGE);
   });
 
   app.use(BLOGS_PATH, blogsRouter);

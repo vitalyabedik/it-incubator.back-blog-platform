@@ -3,21 +3,30 @@ import { blogsRepository } from '../../repositories/blogs.repositories';
 import { TRequestWithBody } from '../../../core/types/request';
 import { EHttpStatus } from '../../../core/constants/http';
 import { TBlogInputDto } from '../../dto/blogs.input-dto';
-import { TBlogView } from '../../types';
+import { TBlog } from '../../types';
+import { mapToBlogViewModel } from '../mappers/map-to-blog-view-model.util';
 
-export const createBlogHandler = (
+export const createBlogHandler = async (
   req: TRequestWithBody<TBlogInputDto>,
   res: Response,
 ) => {
-  const { name, description, websiteUrl } = req.body;
+  try {
+    const { name, description, websiteUrl } = req.body;
 
-  const newBlog: TBlogView = {
-    id: crypto.randomUUID(),
-    name,
-    description,
-    websiteUrl,
-  };
+    const newBlog: TBlog = {
+      name,
+      description,
+      websiteUrl,
+      createdAt: new Date().toISOString(),
+      isMembership: false,
+    };
 
-  blogsRepository.create(newBlog);
-  res.status(EHttpStatus.Created_201).send(newBlog);
+    const createdBlog = await blogsRepository.create(newBlog);
+    const blogViewModel = mapToBlogViewModel(createdBlog);
+    res.status(EHttpStatus.CREATED_201).send(blogViewModel);
+  } catch (error: unknown) {
+    console.log(error);
+
+    res.sendStatus(EHttpStatus.INTERNAL_SERVER_ERROR_500);
+  }
 };

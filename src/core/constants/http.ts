@@ -1,12 +1,12 @@
 export enum EHttpStatus {
-  Ok_200 = 200,
-  Created_201 = 201,
-  NoContent_204 = 204,
+  OK_200 = 200,
+  CREATED_201 = 201,
+  NO_CONTENT_204 = 204,
 
-  BadRequest_400 = 400,
-  Unauthorized_401 = 401,
-  Forbidden_403 = 403,
-  NotFound_404 = 404,
+  BAD_REQUEST_400 = 400,
+  UNAUTHORIZED_401 = 401,
+  FORBIDDEN_403 = 403,
+  NOT_FOUND_404 = 404,
 
-  InternalServerError_500 = 500,
+  INTERNAL_SERVER_ERROR_500 = 500,
 }

@@ -7,6 +7,8 @@ export const validationMessages = {
   nameLength: 'некорректная длина поля name',
   descriptionType: 'description должен быть строкой',
   descriptionLength: 'некорректная длина поля description',
+  createdAtType: 'createdAt должен быть в формате DATE ISO STRING',
+  isMembershipType: 'isMembership должен быть булевым значением',
   websiteUrlType: 'websiteUrl должен быть строкой',
   websiteUrlLength: 'некорректная длина поля websiteUrl',
   websiteUrlPattern:

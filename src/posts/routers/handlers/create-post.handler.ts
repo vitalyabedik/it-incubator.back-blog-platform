@@ -4,26 +4,33 @@ import { TRequestWithBody } from '../../../core/types/request';
 import { EHttpStatus } from '../../../core/constants/http';
 import { TPostInputDto } from '../../dto/posts.input-dto';
 import { postsRepository } from '../../repositories/posts.repositories';
-import { TPostView } from '../../types';
+import { TPost } from '../../types';
+import { mapToPostViewModel } from '../mappers/map-to-post-view-model.util';
 
-export const createPostHandler = (
+export const createPostHandler = async (
   req: TRequestWithBody<TPostInputDto>,
   res: Response,
 ) => {
-  const { blogId, content, shortDescription, title } = req.body;
+  try {
+    const { blogId, content, shortDescription, title } = req.body;
 
-  const blog = blogsRepository.findById(blogId)!;
+    const blog = await blogsRepository.findById(blogId);
 
-  const { name } = blog;
-  const newPost: TPostView = {
-    id: crypto.randomUUID(),
-    blogName: name,
-    blogId,
-    content,
-    shortDescription,
-    title,
-  };
+    const newPost: TPost = {
+      blogName: String(blog!.name),
+      blogId,
+      content,
+      shortDescription,
+      title,
+      createdAt: new Date().toISOString(),
+    };
 
-  postsRepository.create(newPost);
-  res.status(EHttpStatus.Created_201).send(newPost);
+    const createdPost = await postsRepository.create(newPost);
+    const postViewModel = mapToPostViewModel(createdPost);
+    res.status(EHttpStatus.CREATED_201).send(postViewModel);
+  } catch (error: unknown) {
+    console.log(error);
+
+    res.sendStatus(EHttpStatus.INTERNAL_SERVER_ERROR_500);
+  }
 };

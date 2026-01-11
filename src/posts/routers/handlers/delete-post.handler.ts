@@ -4,18 +4,24 @@ import { TRequestWithParams } from '../../../core/types/request';
 import { postsRepository } from '../../repositories/posts.repositories';
 import { TDeletePostParams } from '../../types';
 
-export const deletePostHandler = (
+export const deletePostHandler = async (
   req: TRequestWithParams<TDeletePostParams>,
   res: Response,
 ) => {
-  const postId = req.params.id;
-  const post = postsRepository.findById(postId);
+  try {
+    const postId = req.params.id;
+    const post = await postsRepository.findById(postId);
 
-  if (!post) {
-    res.sendStatus(EHttpStatus.NotFound_404);
-    return;
+    if (!post) {
+      res.sendStatus(EHttpStatus.NOT_FOUND_404);
+      return;
+    }
+
+    await postsRepository.delete(postId);
+    res.sendStatus(EHttpStatus.NO_CONTENT_204);
+  } catch (error: unknown) {
+    console.log(error);
+
+    res.sendStatus(EHttpStatus.INTERNAL_SERVER_ERROR_500);
   }
-
-  postsRepository.delete(postId);
-  res.sendStatus(EHttpStatus.NoContent_204);
 };

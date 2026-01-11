@@ -1,32 +1,38 @@
-import { db } from '../../db/in-memory.db';
+import { ObjectId, WithId } from 'mongodb';
+import { blogCollection } from '../../db/mongo.db';
 import { TBlogInputDto } from '../dto/blogs.input-dto';
-import { TBlogView } from '../types';
+import { TBlog } from '../types';
 
 export const blogsRepository = {
-  findAll(): TBlogView[] {
-    return db.blogs;
+  async findAll(): Promise<WithId<TBlog>[]> {
+    return blogCollection.find().toArray();
   },
-  findById(id: string): TBlogView | null {
-    return db.blogs.find((blog) => blog.id === id) || null;
+  async findById(id: string): Promise<WithId<TBlog> | null> {
+    return blogCollection.findOne({ _id: new ObjectId(id) });
   },
-  create(newBlog: TBlogView): TBlogView {
-    db.blogs.push(newBlog);
-    return newBlog;
+  async create(newBlog: TBlog): Promise<WithId<TBlog>> {
+    const insertResult = await blogCollection.insertOne(newBlog);
+    return { ...newBlog, _id: insertResult.insertedId };
   },
-  update(id: string, dto: TBlogInputDto): void {
-    const blog = db.blogs.find((blog) => blog.id === id)!;
-
+  async update(id: string, dto: TBlogInputDto): Promise<void> {
     const { name, description, websiteUrl } = dto;
 
-    blog.name = name;
-    blog.description = description;
-    blog.websiteUrl = websiteUrl;
+    await blogCollection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          name,
+          description,
+          websiteUrl,
+        },
+      },
+    );
     return;
   },
-  delete(id: string): void {
-    const index = db.blogs.findIndex((blog) => blog.id === id);
-
-    db.blogs.splice(index, 1);
+  async delete(id: string): Promise<void> {
+    await blogCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
     return;
   },
 };

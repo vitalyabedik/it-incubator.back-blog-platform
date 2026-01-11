@@ -1,10 +1,14 @@
-export type TPostView = {
-  id: string;
+export type TPost = {
   title: string;
   shortDescription: string;
   content: string;
   blogId: string;
   blogName: string;
+  createdAt: string;
+};
+
+export type TPostViewModel = TPost & {
+  id: string;
 };
 
 export type TGetPostParams = {

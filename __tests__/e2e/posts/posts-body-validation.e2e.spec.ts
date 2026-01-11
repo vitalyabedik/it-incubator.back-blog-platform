@@ -14,8 +14,10 @@ import {
   POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH,
   POST_TITLE_MAX_FIELD_LENGTH,
 } from '../../../src/posts/constants/validation';
-import { TPostView } from '../../../src/posts/types';
+import { TPostViewModel } from '../../../src/posts/types';
 import { createBlog } from '../../utils/blogs/create-blog';
+import { runDB } from '../../../src/db/mongo.db';
+import { SETTINGS } from '../../../src/core/settings';
 
 describe('Post API body validation check', () => {
   const app = express();
@@ -27,6 +29,7 @@ describe('Post API body validation check', () => {
   const errorsLength = Object.keys(correctTestPostData).length;
 
   beforeAll(async () => {
+    await runDB(SETTINGS.MONGO_URL);
     await clearDb(app);
   });
 
@@ -41,7 +44,7 @@ describe('Post API body validation check', () => {
       .post(POSTS_PATH)
       .set('Authorization', adminToken)
       .send(invalidDataSet1)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest1.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -57,7 +60,7 @@ describe('Post API body validation check', () => {
       .post(POSTS_PATH)
       .set('Authorization', adminToken)
       .send(invalidDataSet2)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest2.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -73,7 +76,7 @@ describe('Post API body validation check', () => {
       .post(POSTS_PATH)
       .set('Authorization', adminToken)
       .send(invalidDataSet3)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest3.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -97,7 +100,7 @@ describe('Post API body validation check', () => {
       .put(`${POSTS_PATH}/${createdPost.id}`)
       .set('Authorization', generateBasicAuthToken())
       .send(invalidDataSet1)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest1.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -113,7 +116,7 @@ describe('Post API body validation check', () => {
       .put(`${POSTS_PATH}/${createdPost.id}`)
       .set('Authorization', adminToken)
       .send(invalidDataSet2)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest2.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -129,7 +132,7 @@ describe('Post API body validation check', () => {
       .put(`${POSTS_PATH}/${createdPost.id}`)
       .set('Authorization', adminToken)
       .send(invalidDataSet3)
-      .expect(EHttpStatus.BadRequest_400);
+      .expect(EHttpStatus.BAD_REQUEST_400);
 
     expect(invalidDataSetRequest3.body.errorsMessages).toHaveLength(
       errorsLength,
@@ -137,11 +140,12 @@ describe('Post API body validation check', () => {
 
     const postResponse = await getPostById(app, createdPost.id);
 
-    const expectedPostData: TPostView = {
+    const expectedPostData: TPostViewModel = {
       ...correctTestPostData,
       id: createdPost.id,
       blogId: createdBlog.id,
       blogName: createdBlog.name,
+      createdAt: postResponse.createdAt,
     };
 
     expect(postResponse).toEqual(expectedPostData);

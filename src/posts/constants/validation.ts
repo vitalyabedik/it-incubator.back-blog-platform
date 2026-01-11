@@ -11,4 +11,5 @@ export const validationMessages = {
   contentLength: 'некорректная длина поля content',
   blogIdType: 'blogId должен быть строкой',
   blogIdLength: 'некорректная длина поля blogId',
+  createdAtType: 'createdAt должен быть в формате DATE ISO STRING',
 };

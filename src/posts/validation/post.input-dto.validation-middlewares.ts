@@ -1,52 +1,72 @@
-import { body } from 'express-validator';
 import { EPostValidationField } from '../constants/errors';
-import { FIELD_REQUIRED_LENGTH } from '../../core/constants/validation';
 import {
   POST_CONTENT_MAX_FIELD_LENGTH,
   POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH,
   POST_TITLE_MAX_FIELD_LENGTH,
   validationMessages,
 } from '../constants/validation';
+import {
+  validateBaseISOStringDateField,
+  validateBaseStringField,
+} from '../../core/utils/validation';
 
-const titleValidation = body(EPostValidationField.Title)
-  .isString()
-  .withMessage(validationMessages.titleType)
-  .trim()
-  .isLength({ min: FIELD_REQUIRED_LENGTH, max: POST_TITLE_MAX_FIELD_LENGTH })
-  .withMessage(validationMessages.titleLength);
+const titleValidation = validateBaseStringField(EPostValidationField.TITLE, {
+  texts: {
+    typeMessage: validationMessages.titleType,
+    lengthMessage: validationMessages.titleLength,
+  },
+  lengthRange: {
+    max: POST_TITLE_MAX_FIELD_LENGTH,
+  },
+});
 
-const shortDescriptionValidation = body(EPostValidationField.ShortDescription)
-  .isString()
-  .withMessage(validationMessages.shortDescriptionType)
-  .trim()
-  .isLength({
-    min: FIELD_REQUIRED_LENGTH,
-    max: POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH,
-  })
-  .withMessage(validationMessages.shortDescriptionLength);
+const shortDescriptionValidation = validateBaseStringField(
+  EPostValidationField.SHORT_DESCRIPTION,
+  {
+    texts: {
+      typeMessage: validationMessages.shortDescriptionType,
+      lengthMessage: validationMessages.shortDescriptionLength,
+    },
+    lengthRange: {
+      max: POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH,
+    },
+  },
+);
 
-const contentValidation = body(EPostValidationField.Content)
-  .isString()
-  .withMessage(validationMessages.contentType)
-  .trim()
-  .isLength({
-    min: FIELD_REQUIRED_LENGTH,
-    max: POST_CONTENT_MAX_FIELD_LENGTH,
-  })
-  .withMessage(validationMessages.contentLength);
+const contentValidation = validateBaseStringField(
+  EPostValidationField.CONTENT,
+  {
+    texts: {
+      typeMessage: validationMessages.contentType,
+      lengthMessage: validationMessages.contentLength,
+    },
+    lengthRange: {
+      max: POST_CONTENT_MAX_FIELD_LENGTH,
+    },
+  },
+);
 
-const blogIdValidation = body(EPostValidationField.BlogId)
-  .isString()
-  .withMessage(validationMessages.blogIdType)
-  .trim()
-  .isLength({
-    min: FIELD_REQUIRED_LENGTH,
-  })
-  .withMessage(validationMessages.blogIdLength);
+const blogIdValidation = validateBaseStringField(EPostValidationField.BLOG_ID, {
+  texts: {
+    typeMessage: validationMessages.blogIdType,
+    lengthMessage: validationMessages.blogIdLength,
+  },
+});
+
+const createdAtValidation = validateBaseISOStringDateField(
+  EPostValidationField.CREATED_AT,
+  {
+    texts: {
+      typeMessage: validationMessages.createdAtType,
+    },
+    optional: true,
+  },
+);
 
 export const postInputDtoValidation = [
   titleValidation,
   shortDescriptionValidation,
   contentValidation,
   blogIdValidation,
+  createdAtValidation,
 ];

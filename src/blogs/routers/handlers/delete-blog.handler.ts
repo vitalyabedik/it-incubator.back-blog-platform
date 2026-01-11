@@ -4,18 +4,24 @@ import { TRequestWithParams } from '../../../core/types/request';
 import { EHttpStatus } from '../../../core/constants/http';
 import { TDeleteBlogParams } from '../../types';
 
-export const deleteBlogHandler = (
+export const deleteBlogHandler = async (
   req: TRequestWithParams<TDeleteBlogParams>,
   res: Response,
 ) => {
-  const blogId = req.params.id;
-  const blog = blogsRepository.findById(blogId);
+  try {
+    const blogId = req.params.id;
+    const blog = await blogsRepository.findById(blogId);
 
-  if (!blog) {
-    res.sendStatus(EHttpStatus.NotFound_404);
-    return;
+    if (!blog) {
+      res.sendStatus(EHttpStatus.NOT_FOUND_404);
+      return;
+    }
+
+    await blogsRepository.delete(blogId);
+    res.sendStatus(EHttpStatus.NO_CONTENT_204);
+  } catch (error: unknown) {
+    console.log(error);
+
+    res.sendStatus(EHttpStatus.INTERNAL_SERVER_ERROR_500);
   }
-
-  blogsRepository.delete(blogId);
-  res.sendStatus(EHttpStatus.NoContent_204);
 };
