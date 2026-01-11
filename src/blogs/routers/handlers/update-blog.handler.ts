@@ -5,18 +5,24 @@ import { EHttpStatus } from '../../../core/constants/http';
 import { TBlogInputDto } from '../../dto/blogs.input-dto';
 import { TUpdateBlogParams } from '../../types';
 
-export const updateBlogHandler = (
+export const updateBlogHandler = async (
   req: TRequestWithParamsAndBody<TUpdateBlogParams, TBlogInputDto>,
   res: Response,
 ) => {
-  const blogId = req.params.id;
-  const blog = blogsRepository.findById(blogId);
+  try {
+    const blogId = req.params.id;
+    const blog = await blogsRepository.findById(blogId);
 
-  if (!blog) {
-    res.sendStatus(EHttpStatus.NOT_FOUND_404);
-    return;
+    if (!blog) {
+      res.sendStatus(EHttpStatus.NOT_FOUND_404);
+      return;
+    }
+
+    await blogsRepository.update(blogId, req.body);
+    res.sendStatus(EHttpStatus.NO_CONTENT_204);
+  } catch (error: unknown) {
+    console.log(error);
+
+    res.sendStatus(EHttpStatus.INTERNAL_SERVER_ERROR_500);
   }
-
-  blogsRepository.update(blogId, req.body);
-  res.sendStatus(EHttpStatus.NO_CONTENT_204);
 };

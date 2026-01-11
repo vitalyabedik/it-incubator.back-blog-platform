@@ -5,7 +5,10 @@ import {
   POST_TITLE_MAX_FIELD_LENGTH,
   validationMessages,
 } from '../constants/validation';
-import { validateBaseStringField } from '../../core/utils/validation';
+import {
+  validateBaseISOStringDateField,
+  validateBaseStringField,
+} from '../../core/utils/validation';
 
 const titleValidation = validateBaseStringField(EPostValidationField.TITLE, {
   texts: {
@@ -50,9 +53,20 @@ const blogIdValidation = validateBaseStringField(EPostValidationField.BLOG_ID, {
   },
 });
 
+const createdAtValidation = validateBaseISOStringDateField(
+  EPostValidationField.CREATED_AT,
+  {
+    texts: {
+      typeMessage: validationMessages.createdAtType,
+    },
+    optional: true,
+  },
+);
+
 export const postInputDtoValidation = [
   titleValidation,
   shortDescriptionValidation,
   contentValidation,
   blogIdValidation,
+  createdAtValidation,
 ];

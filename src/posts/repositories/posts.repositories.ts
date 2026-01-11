@@ -1,34 +1,39 @@
-import { db } from '../../db/in-memory.db';
+import { ObjectId, WithId } from 'mongodb';
 import { TPostInputDto } from '../dto/posts.input-dto';
-import { TPostView } from '../types';
+import { TPost } from '../types';
+import { postCollection } from '../../db/mongo.db';
 
 export const postsRepository = {
-  findAll(): TPostView[] {
-    return db.posts;
+  async findAll(): Promise<WithId<TPost>[]> {
+    return postCollection.find().toArray();
   },
-  findById(id: string): TPostView | null {
-    return db.posts.find((post) => post.id === id) || null;
+  async findById(id: string): Promise<WithId<TPost> | null> {
+    return postCollection.findOne({ _id: new ObjectId(id) });
   },
-  create(newPost: TPostView): TPostView {
-    db.posts.push(newPost);
-    return newPost;
+  async create(newPost: TPost): Promise<WithId<TPost>> {
+    const insertResult = await postCollection.insertOne(newPost);
+    return { ...newPost, _id: insertResult.insertedId };
   },
-  update(id: string, dto: TPostInputDto): void {
-    const post = db.posts.find((post) => post.id === id)!;
-
+  async update(id: string, dto: TPostInputDto): Promise<void> {
     const { blogId, content, shortDescription, title } = dto;
 
-    post.blogId = blogId;
-    post.content = content;
-    post.shortDescription = shortDescription;
-    post.title = title;
-
+    await postCollection.updateOne(
+      {
+        _id: new ObjectId(id),
+      },
+      {
+        $set: {
+          blogId,
+          content,
+          shortDescription,
+          title,
+        },
+      },
+    );
     return;
   },
-  delete(id: string): void {
-    const index = db.posts.findIndex((post) => post.id === id);
-
-    db.posts.splice(index, 1);
+  async delete(id: string): Promise<void> {
+    await postCollection.deleteOne({ _id: new ObjectId(id) });
     return;
   },
 };

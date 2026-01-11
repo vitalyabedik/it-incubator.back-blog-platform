@@ -13,13 +13,33 @@ export const validateBaseStringField = (
       max?: number;
     };
   },
-) =>
-  body(field)
+) => {
+  const { texts, lengthRange } = options;
+
+  return body(field)
     .isString()
-    .withMessage(options.texts.typeMessage)
+    .withMessage(texts.typeMessage)
     .trim()
     .isLength({
-      min: options.lengthRange?.min || FIELD_REQUIRED_LENGTH,
-      ...(options.lengthRange?.max && { max: options.lengthRange.max }),
+      min: lengthRange?.min || FIELD_REQUIRED_LENGTH,
+      ...(lengthRange?.max && { max: lengthRange.max }),
     })
-    .withMessage(options.texts.lengthMessage);
+    .withMessage(texts.lengthMessage);
+};
+
+export const validateBaseISOStringDateField = (
+  field: string,
+  options: {
+    texts: {
+      typeMessage: string;
+    };
+    optional?: boolean;
+  },
+) => {
+  const { optional = false, texts } = options;
+  const validator = body(field);
+
+  if (!optional) return validator.isISO8601().withMessage(texts.typeMessage);
+
+  return validator.optional().isISO8601().withMessage(texts.typeMessage);
+};

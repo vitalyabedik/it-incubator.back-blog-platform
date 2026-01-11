@@ -3,4 +3,5 @@ export enum EPostValidationField {
   SHORT_DESCRIPTION = 'shortDescription',
   CONTENT = 'content',
   BLOG_ID = 'blogId',
+  CREATED_AT = 'createdAt',
 }

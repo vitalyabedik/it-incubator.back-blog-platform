@@ -14,7 +14,9 @@ import {
   BLOG_NAME_MAX_FIELD_LENGTH,
   BLOG_WEBSITE_URL_MAX_FIELD_LENGTH,
 } from '../../../src/blogs/constants/validation';
-import { TBlogView } from '../../../src/blogs/types';
+import { TBlogViewModel } from '../../../src/blogs/types';
+import { runDB, stopDB } from '../../../src/db/mongo.db';
+import { SETTINGS } from '../../../src/core/settings';
 
 describe('Blog API body validation check', () => {
   const app = express();
@@ -25,7 +27,12 @@ describe('Blog API body validation check', () => {
   const errorsLength = Object.keys(correctTestBlogData).length;
 
   beforeAll(async () => {
+    await runDB(SETTINGS.MONGO_URL);
     await clearDb(app);
+  });
+
+  afterAll(async () => {
+    await stopDB();
   });
 
   it('POST /api/blogs; не должен создавать blog с некорректным body', async () => {
@@ -128,9 +135,11 @@ describe('Blog API body validation check', () => {
 
     const blogResponse = await getBlogById(app, createdBlog.id);
 
-    const expectedBlogData: TBlogView = {
+    const expectedBlogData: TBlogViewModel = {
       ...correctTestBlogData,
       id: createdBlog.id,
+      createdAt: blogResponse.createdAt,
+      isMembership: blogResponse.isMembership,
     };
 
     expect(blogResponse).toEqual(expectedBlogData);

@@ -10,7 +10,9 @@ import { EHttpStatus } from '../../../src/core/constants/http';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
 import { updateBlog } from '../../utils/blogs/update-blog';
 import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
-import { TBlogView } from '../../../src/blogs/types';
+import { TBlogViewModel } from '../../../src/blogs/types';
+import { runDB } from '../../../src/db/mongo.db';
+import { SETTINGS } from '../../../src/core/settings';
 
 describe('Blog API', () => {
   const app = express();
@@ -19,6 +21,7 @@ describe('Blog API', () => {
   const adminToken = generateBasicAuthToken();
 
   beforeAll(async () => {
+    await runDB(SETTINGS.MONGO_URL);
     await clearDb(app);
   });
 
@@ -68,9 +71,11 @@ describe('Blog API', () => {
 
     const blogResponse = await getBlogById(app, createdBlog.id);
 
-    const expectedBlogData: TBlogView = {
+    const expectedBlogData: TBlogViewModel = {
       ...blogUpdateData,
       id: createdBlog.id,
+      createdAt: blogResponse.createdAt,
+      isMembership: blogResponse.isMembership,
     };
 
     expect(blogResponse).toEqual(expectedBlogData);

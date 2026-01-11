@@ -10,8 +10,10 @@ import { getPostDto } from '../../utils/posts/get-post-dto';
 import { createPost } from '../../utils/posts/create-post';
 import { updatePost } from '../../utils/posts/update-post';
 import { getPostById } from '../../utils/posts/get-post-by-id';
-import { TPostView } from '../../../src/posts/types';
+import { TPostViewModel } from '../../../src/posts/types';
 import { createBlog } from '../../utils/blogs/create-blog';
+import { runDB } from '../../../src/db/mongo.db';
+import { SETTINGS } from '../../../src/core/settings';
 
 describe('Post API', () => {
   const app = express();
@@ -20,6 +22,7 @@ describe('Post API', () => {
   const adminToken = generateBasicAuthToken();
 
   beforeAll(async () => {
+    await runDB(SETTINGS.MONGO_URL);
     await clearDb(app);
   });
 
@@ -78,11 +81,12 @@ describe('Post API', () => {
 
     const postResponse = await getPostById(app, createdPost.id);
 
-    const expectedPostData: TPostView = {
+    const expectedPostData: TPostViewModel = {
       ...postUpdateData,
       id: createdPost.id,
       blogId: createdPost.blogId,
       blogName: createdBlog.name,
+      createdAt: postResponse.createdAt,
     };
 
     expect(postResponse).toEqual(expectedPostData);
