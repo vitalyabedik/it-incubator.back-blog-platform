@@ -14,7 +14,7 @@ export const createBlogFilter = (queryDto: TBlogQueryInput): TBlogFilter => {
   const filter: TBlogFilter = {};
 
   if (searchNameTerm) {
-    filter.title = { $regex: searchNameTerm, $options: 'i' };
+    filter.name = { $regex: searchNameTerm, $options: 'i' };
   }
 
   return filter;
