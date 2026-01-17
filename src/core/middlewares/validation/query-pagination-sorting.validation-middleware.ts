@@ -29,7 +29,7 @@ export const paginationAndSortingValidation = <T extends string>(
       .toInt(),
 
     query(EValidationPaginationAndSort.SORT_BY)
-      .default(Object.values(sortFieldsEnum)[0])
+      .default(paginationAndSortingDefault.sortBy)
       .isIn(allowedSortFields)
       .withMessage(paginationAndSortErrorMessages.sortByValues),
 
