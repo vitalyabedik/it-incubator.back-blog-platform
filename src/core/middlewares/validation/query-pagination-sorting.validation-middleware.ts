@@ -5,10 +5,14 @@ import {
   paginationAndSortingDefault,
 } from '../../constants/paginationAndSort';
 import {
+  EValidationFilter,
   EValidationPaginationAndSort,
   FIELD_REQUIRED_LENGTH,
 } from '../../constants/validation';
-import { paginationAndSortErrorMessages } from '../../constants/texts';
+import {
+  filterErrorMessages,
+  paginationAndSortErrorMessages,
+} from '../../constants/texts';
 
 export const paginationAndSortingValidation = <T extends string>(
   sortFieldsEnum: Record<string, T>,
@@ -16,6 +20,13 @@ export const paginationAndSortingValidation = <T extends string>(
   const allowedSortFields = Object.values(sortFieldsEnum);
 
   return [
+    query(EValidationFilter.SEARCH_NAME_TERM)
+      .optional()
+      .isString()
+      .withMessage(filterErrorMessages.searchNameTermType)
+      .trim()
+      .customSanitizer((value) => value || undefined),
+
     query(EValidationPaginationAndSort.PAGE_NUMBER)
       .default(paginationAndSortingDefault.pageNumber)
       .isInt({ min: FIELD_REQUIRED_LENGTH })

@@ -10,6 +10,10 @@ export const paramsErrorMessages = {
   blogIdObjectIdType: `некорректный формат ObjectId для blogId`,
 };
 
+export const filterErrorMessages = {
+  searchNameTermType: 'searchNameTerm должен быть строкой',
+};
+
 export const paginationAndSortErrorMessages = {
   pageNumberInt: 'Значение pageNumber должно быть положительным числом',
   pageSizeRange: `Значение pageSize должно в промежутке от ${FIELD_REQUIRED_LENGTH} до ${MAX_PAGE_SIZE}`,

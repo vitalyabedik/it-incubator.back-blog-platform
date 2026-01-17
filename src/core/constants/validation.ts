@@ -11,3 +11,7 @@ export enum EValidationPaginationAndSort {
   SORT_BY = 'sortBy',
   SORT_DIRECTION = 'sortDirection',
 }
+
+export enum EValidationFilter {
+  SEARCH_NAME_TERM = 'searchNameTerm',
+}
