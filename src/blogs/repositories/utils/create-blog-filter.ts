@@ -3,7 +3,7 @@ import { TBlog } from '../../domain/blog';
 import { TBlogQueryInput } from '../../routers/input/blog-query.input';
 
 type TBlogFilter = Filter<TBlog> & {
-  title?: {
+  name?: {
     $regex: string;
     $options: string;
   };
