@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { EHttpStatus } from '../../core/constants/http';
+import 'dotenv/config';
 
 export const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;

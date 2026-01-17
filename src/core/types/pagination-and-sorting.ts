@@ -10,11 +10,11 @@ export type TPaginationAndSorting<S> = {
 export type TPagination = {
   page: number;
   pageSize: number;
-  pageCount: number;
+  pagesCount: number;
   totalCount: number;
 };
 
-export type TPaginationMeta = Omit<TPagination, 'pageCount'>;
+export type TPaginationMeta = Omit<TPagination, 'pagesCount'>;
 
 export type TBasePaginationOutput<T> = {
   items: T[];

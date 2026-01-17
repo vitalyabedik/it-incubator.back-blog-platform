@@ -13,7 +13,7 @@ export const mapToBlogListPaginatedOutput = (
   return {
     page: page,
     pageSize: pageSize,
-    pageCount: Math.ceil(totalCount / pageSize),
+    pagesCount: Math.ceil(totalCount / pageSize),
     totalCount: totalCount,
 
     items: blogs.map((blog) => ({

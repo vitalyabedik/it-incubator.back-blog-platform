@@ -13,7 +13,7 @@ export const mapToPostListPaginatedOutput = (
   return {
     page: page,
     pageSize: pageSize,
-    pageCount: Math.ceil(totalCount / pageSize),
+    pagesCount: Math.ceil(totalCount / pageSize),
     totalCount: totalCount,
 
     items: posts.map((post) => ({

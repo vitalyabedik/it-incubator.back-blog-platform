@@ -18,7 +18,6 @@ postsRouter
   .get(
     routersPaths.empty,
     paginationAndSortingValidation(EPostSortField),
-    inputValidationResultMiddleware,
     getPostListHandler,
   )
   .get(

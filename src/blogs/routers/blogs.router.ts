@@ -22,13 +22,11 @@ blogsRouter
   .get(
     routersPaths.empty,
     paginationAndSortingValidation(EBlogSortField),
-    inputValidationResultMiddleware,
     getBlogListHandler,
   )
   .get(
     routersPaths.blogs.allPostsByBlogId,
     paginationAndSortingValidation(EPostSortField),
-    inputValidationResultMiddleware,
     getPostListByBlogIdHandler,
   )
   .get(
