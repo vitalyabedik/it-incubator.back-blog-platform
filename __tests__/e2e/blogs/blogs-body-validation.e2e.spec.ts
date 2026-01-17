@@ -16,6 +16,12 @@ import { createBlog } from '../../utils/blogs/create-blog';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
 import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
 import { setupTestApp } from '../../utils/setup-test-app';
+import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
+import {
+  POST_CONTENT_MAX_FIELD_LENGTH,
+  POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH,
+  POST_TITLE_MAX_FIELD_LENGTH,
+} from '../../../src/posts/constants/validation';
 
 describe('Blog API body validation check', () => {
   let app: Express;
@@ -80,6 +86,66 @@ describe('Blog API body validation check', () => {
 
     const blogListResponse = await request(app).get(BLOGS_PATH);
     expect(blogListResponse.body.items).toHaveLength(0);
+  });
+
+  it('POST /api/blogs/:blogId/posts; не должен создавать post для blog с некорректным body', async () => {
+    const createdBlog = await createBlog({ app, authToken });
+
+    const invalidDataSet1: TPostCreateInput = {
+      title: '',
+      shortDescription: '',
+      content: '',
+      blogId: '',
+    };
+    const postErrorsLength = Object.keys(invalidDataSet1).length;
+    const invalidDataSetRequest1 = await request(app)
+      .post(`${BLOGS_PATH}/${createdBlog.id}/posts`)
+      .set('Authorization', authToken)
+      .send(invalidDataSet1)
+      .expect(EHttpStatus.BAD_REQUEST_400);
+
+    expect(invalidDataSetRequest1.body.errorsMessages).toHaveLength(
+      postErrorsLength,
+    );
+
+    const invalidDataSet2: TPostCreateInput = {
+      title: '         ',
+      shortDescription: '       ',
+      content: '       ',
+      blogId: '       ',
+    };
+    const invalidDataSetRequest2 = await request(app)
+      .post(`${BLOGS_PATH}/${createdBlog.id}/posts`)
+      .set('Authorization', authToken)
+      .send(invalidDataSet2)
+      .expect(EHttpStatus.BAD_REQUEST_400);
+
+    expect(invalidDataSetRequest2.body.errorsMessages).toHaveLength(
+      postErrorsLength,
+    );
+
+    const invalidDataSet3: TPostCreateInput = {
+      title: '1'.repeat(POST_TITLE_MAX_FIELD_LENGTH + 1),
+      shortDescription: '2'.repeat(POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH + 1),
+      content: '3'.repeat(POST_CONTENT_MAX_FIELD_LENGTH + 1),
+      blogId: '       ',
+    };
+    const invalidDataSetRequest3 = await request(app)
+      .post(`${BLOGS_PATH}/${createdBlog.id}/posts`)
+      .set('Authorization', authToken)
+      .send(invalidDataSet3)
+      .expect(EHttpStatus.BAD_REQUEST_400);
+
+    expect(invalidDataSetRequest3.body.errorsMessages).toHaveLength(
+      postErrorsLength,
+    );
+
+    const postListResponse = await request(app).get(
+      `${BLOGS_PATH}/${createdBlog.id}/posts`,
+    );
+
+    expect(postListResponse.body.items).toHaveLength(0);
+    expect(postListResponse.body.totalCount).toBe(0);
   });
 
   it('PUT /api/blogs/:id; не должен изменять blog с некорректным body', async () => {

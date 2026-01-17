@@ -14,6 +14,15 @@ export const postsService = {
     return postsRepository.getPostList(queryDto);
   },
 
+  async getPostListByBlogId(
+    blogId: string,
+    queryDto: TPostQueryInput,
+  ): Promise<TPostListRepositoryOutput> {
+    await blogsRepository.getBlogById(blogId);
+
+    return postsRepository.getPostListByBlogId(blogId, queryDto);
+  },
+
   async getPostById(id: string): Promise<TPostRepositoryOutput> {
     return postsRepository.getPostById(id);
   },
@@ -24,7 +33,7 @@ export const postsService = {
     const blog = await blogsRepository.getBlogById(blogId);
 
     const newPost: TPost = {
-      blogName: String(blog.name),
+      blogName: blog.name,
       blogId,
       content,
       shortDescription,
@@ -33,6 +42,28 @@ export const postsService = {
     };
 
     return postsRepository.create(newPost);
+  },
+
+  async createPostByBlogId(
+    blogId: string,
+    dto: TPostCreateInput,
+  ): Promise<string> {
+    const { content, shortDescription, title } = dto;
+
+    const blog = await blogsRepository.getBlogById(blogId);
+
+    const newPost: TPost = {
+      blogName: blog.name,
+      blogId,
+      content,
+      shortDescription,
+      title,
+      createdAt: new Date().toISOString(),
+    };
+
+    const postId = await postsRepository.create(newPost);
+
+    return postId;
   },
 
   async update(id: string, dto: TPostUpdateInput): Promise<void> {

@@ -3,14 +3,18 @@ import { inputValidationResultMiddleware } from '../../core/middlewares/validati
 import { paramsIdValidationMiddleware } from '../../core/middlewares/validation/params-id.validation.middleware';
 import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
 import { routersPaths } from '../../core/constants/paths';
+import { paginationAndSortingValidation } from '../../core/middlewares/validation/query-pagination-sorting.validation-middleware';
+import { EPostSortField } from '../../posts/routers/input/post-sort-field.input';
+import { postInputDtoValidation } from '../../posts/routers/validation/post.input-dto.validation-middlewares';
 import { getBlogListHandler } from './handlers/get-blog-list.handler';
 import { getBlogHandler } from './handlers/get-blog.handler';
 import { createBlogHandler } from './handlers/create-blog.handler';
 import { deleteBlogHandler } from './handlers/delete-blog.handler';
 import { updateBlogHandler } from './handlers/update-blog.handler';
+import { getPostListByBlogIdHandler } from './handlers/get-post-list-by-blogId.handler';
 import { blogInputDtoValidation } from './validation/blog.input-dto.validation-middlewares';
-import { paginationAndSortingValidation } from '../../core/middlewares/validation/query-pagination-sorting.validation-middleware';
 import { EBlogSortField } from './input/blog-sort-field';
+import { createPostByBlogId } from './handlers/create-post-by-blogId.handler';
 
 export const blogsRouter = Router({});
 
@@ -20,6 +24,12 @@ blogsRouter
     paginationAndSortingValidation(EBlogSortField),
     inputValidationResultMiddleware,
     getBlogListHandler,
+  )
+  .get(
+    routersPaths.blogs.allPostsByBlogId,
+    paginationAndSortingValidation(EPostSortField),
+    inputValidationResultMiddleware,
+    getPostListByBlogIdHandler,
   )
   .get(
     routersPaths.byId,
@@ -33,6 +43,13 @@ blogsRouter
     blogInputDtoValidation,
     inputValidationResultMiddleware,
     createBlogHandler,
+  )
+  .post(
+    routersPaths.blogs.allPostsByBlogId,
+    superAdminGuardMiddleware,
+    postInputDtoValidation,
+    inputValidationResultMiddleware,
+    createPostByBlogId,
   )
   .put(
     routersPaths.byId,

@@ -7,8 +7,9 @@ export const routersPaths = {
   empty: '',
   root: '/',
   byId: '/:id',
-  blogs: '/blogs',
-  posts: '/posts',
+  blogs: {
+    allPostsByBlogId: '/:blogId/posts',
+  },
   testing: '/testing',
   resetDb: '/all-data',
 };

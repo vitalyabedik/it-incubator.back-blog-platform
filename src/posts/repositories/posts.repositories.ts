@@ -28,6 +28,28 @@ export const postsRepository = {
     return { items, totalCount };
   },
 
+  async getPostListByBlogId(
+    blogId: string,
+    queryDto: TPostQueryInput,
+  ): Promise<TPostListRepositoryOutput> {
+    const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
+
+    const filter = { blogId };
+    const skip = (pageNumber - 1) * pageSize;
+
+    const [items, totalCount] = await Promise.all([
+      postCollection
+        .find(filter)
+        .sort({ [sortBy]: sortDirection })
+        .skip(skip)
+        .limit(pageSize)
+        .toArray(),
+      postCollection.countDocuments(filter),
+    ]);
+
+    return { items, totalCount };
+  },
+
   async getPostById(id: string): Promise<TPostRepositoryOutput> {
     const res = await postCollection.findOne({ _id: new ObjectId(id) });
 

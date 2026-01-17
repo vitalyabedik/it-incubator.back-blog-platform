@@ -5,12 +5,15 @@ import { EHttpStatus } from '../../../src/core/constants/http';
 import { TBlogCreateInput } from '../../../src/blogs/routers/input/blog-create.input';
 import { TBlogUpdateInput } from '../../../src/blogs/routers/input/blog-update.input';
 import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
+import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
 import { stopDB } from '../../../src/db/mongo.db';
 import { getBlogDto } from '../../utils/blogs/get-blog-dto';
 import { createBlog } from '../../utils/blogs/create-blog';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
 import { updateBlog } from '../../utils/blogs/update-blog';
 import { setupTestApp } from '../../utils/setup-test-app';
+import { getPostDto } from '../../utils/posts/get-post-dto';
+import { createPostByBlogId } from '../../utils/blogs/create-post-by-blogId';
 
 describe('Blog API', () => {
   let app: Express;
@@ -34,6 +37,25 @@ describe('Blog API', () => {
     await createBlog({ app, authToken, blogDto: newBlog });
   });
 
+  it('POST /api/blogs/:blogId/posts; должен создавать post для blog по blogId', async () => {
+    const createdBlog = await createBlog({ app, authToken });
+
+    const newPost: TPostCreateInput = {
+      ...getPostDto(createdBlog.id),
+      title: 'new post title',
+      shortDescription: 'new post shortDescription',
+      content: 'new post content',
+      blogId: createdBlog.id,
+    };
+
+    await createPostByBlogId({
+      app,
+      authToken,
+      blogOutput: createdBlog,
+      postDto: newPost,
+    });
+  });
+
   it('GET /api/blogs; должен возвращать blog list', async () => {
     await createBlog({ app, authToken });
     await createBlog({ app, authToken });
@@ -44,6 +66,39 @@ describe('Blog API', () => {
 
     expect(response.body.items).toBeInstanceOf(Array);
     expect(response.body.items.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('GET /api/blogs/:blogId/posts; должен возвращать post list по blogId', async () => {
+    const createdBlog = await createBlog({ app, authToken });
+
+    const newPost: TPostCreateInput = {
+      ...getPostDto(createdBlog.id),
+      title: 'new post title',
+      shortDescription: 'new post shortDescription',
+      content: 'new post content',
+      blogId: createdBlog.id,
+    };
+
+    await createPostByBlogId({
+      app,
+      authToken,
+      blogOutput: createdBlog,
+      postDto: newPost,
+    });
+    await createPostByBlogId({
+      app,
+      authToken,
+      blogOutput: createdBlog,
+      postDto: newPost,
+    });
+
+    const response = await request(app)
+      .get(`${BLOGS_PATH}/${createdBlog.id}/posts`)
+      .expect(EHttpStatus.OK_200);
+
+    expect(response.body.items).toBeInstanceOf(Array);
+    expect(response.body.items.length).toBeGreaterThanOrEqual(2);
+    expect(response.body.totalCount).toBe(2);
   });
 
   it('GET /api/blogs/:id; должен возвращать blog по id', async () => {
