@@ -1,28 +1,20 @@
 import { Response } from 'express';
-import { blogsRepository } from '../../repositories/blogs.repositories';
 import { TRequestWithParamsAndBody } from '../../../core/types/request';
 import { EHttpStatus } from '../../../core/constants/http';
-import { TBlogInputDto } from '../../dto/blogs.input-dto';
-import { TUpdateBlogParams } from '../../types';
+import { errorsHandler } from '../../../core/errors/errors.handler';
+import { blogsService } from '../../application/blogs.service';
+import { TBlogUpdateInput } from '../input/blog-update.input';
+import { TUpdateBlogParams } from './params/update-blog-params';
 
 export const updateBlogHandler = async (
-  req: TRequestWithParamsAndBody<TUpdateBlogParams, TBlogInputDto>,
+  req: TRequestWithParamsAndBody<TUpdateBlogParams, TBlogUpdateInput>,
   res: Response,
 ) => {
   try {
-    const blogId = req.params.id;
-    const blog = await blogsRepository.findById(blogId);
+    await blogsService.update(req.params.id, req.body);
 
-    if (!blog) {
-      res.sendStatus(EHttpStatus.NOT_FOUND_404);
-      return;
-    }
-
-    await blogsRepository.update(blogId, req.body);
     res.sendStatus(EHttpStatus.NO_CONTENT_204);
   } catch (error: unknown) {
-    console.log(error);
-
-    res.sendStatus(EHttpStatus.INTERNAL_SERVER_ERROR_500);
+    errorsHandler(error, res);
   }
 };

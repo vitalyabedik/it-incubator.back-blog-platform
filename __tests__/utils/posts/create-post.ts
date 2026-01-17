@@ -3,27 +3,34 @@ import { Express } from 'express';
 import { POSTS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
 import { TPostInputDto } from '../../../src/posts/dto/posts.input-dto';
+import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
 import { TPostViewModel } from '../../../src/posts/types';
-import { generateBasicAuthToken } from '../generate-admin-auth-token';
 import { getPostDto } from './get-post-dto';
-import { TBlogViewModel } from '../../../src/blogs/types';
 
-export const createPost = async (
-  app: Express,
-  blogView: TBlogViewModel,
-  postDto?: TPostInputDto,
-): Promise<TPostViewModel> => {
-  const defaultPostData: TPostInputDto = await getPostDto(blogView.id);
+type TCreatePostArgs = {
+  app: Express;
+  authToken: string;
+  blogOutput: TBlogOutput;
+  postDto?: TPostInputDto;
+};
+
+export const createPost = async ({
+  app,
+  authToken,
+  blogOutput,
+  postDto,
+}: TCreatePostArgs): Promise<TPostViewModel> => {
+  const defaultPostData: TPostInputDto = await getPostDto(blogOutput.id);
 
   const testPostData = {
     ...defaultPostData,
     ...postDto,
-    blogName: blogView.name,
+    blogName: blogOutput.name,
   };
 
   const createdPostResponse = await request(app)
     .post(POSTS_PATH)
-    .set('Authorization', generateBasicAuthToken())
+    .set('Authorization', authToken)
     .send(testPostData)
     .expect(EHttpStatus.CREATED_201);
 

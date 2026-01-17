@@ -1,8 +1,9 @@
 import { Response } from 'express';
 import { TRequestWithParams } from '../../../core/types/request';
+import { EHttpStatus } from '../../../core/constants/http';
+import { errorsHandler } from '../../../core/errors/errors.handler';
 import { postsRepository } from '../../repositories/posts.repositories';
 import { TGetPostParams } from '../../types';
-import { EHttpStatus } from '../../../core/constants/http';
 import { mapToPostViewModel } from '../mappers/map-to-post-view-model.util';
 
 export const getPostHandler = async (
@@ -20,8 +21,6 @@ export const getPostHandler = async (
     const postViewModel = mapToPostViewModel(post);
     res.send(postViewModel);
   } catch (error: unknown) {
-    console.log(error);
-
-    res.sendStatus(EHttpStatus.INTERNAL_SERVER_ERROR_500);
+    errorsHandler(error, res);
   }
 };

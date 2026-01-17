@@ -7,7 +7,7 @@ import {
 import { TFieldError } from '../../types/error';
 import { EHttpStatus } from '../../constants/http';
 
-const formatErrors = (error: ValidationError): TFieldError => {
+const formatValidationError = (error: ValidationError): TFieldError => {
   const { path, msg } = error as unknown as FieldValidationError;
 
   return {
@@ -22,7 +22,7 @@ export const inputValidationResultMiddleware = (
   next: NextFunction,
 ) => {
   const errors = validationResult(req)
-    .formatWith(formatErrors)
+    .formatWith(formatValidationError)
     .array({ onlyFirstError: true });
 
   if (errors.length > 0) {

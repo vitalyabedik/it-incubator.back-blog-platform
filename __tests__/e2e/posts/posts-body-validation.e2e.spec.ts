@@ -1,10 +1,7 @@
 import request from 'supertest';
-import express from 'express';
-import { setupApp } from '../../../src/setup-app';
-import { clearDb } from '../../utils/clear-db';
+import { Express } from 'express';
 import { POSTS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
 import { TPostInputDto } from '../../../src/posts/dto/posts.input-dto';
 import { getPostDto } from '../../utils/posts/get-post-dto';
 import { createPost } from '../../utils/posts/create-post';
@@ -16,21 +13,18 @@ import {
 } from '../../../src/posts/constants/validation';
 import { TPostViewModel } from '../../../src/posts/types';
 import { createBlog } from '../../utils/blogs/create-blog';
-import { runDB } from '../../../src/db/mongo.db';
-import { SETTINGS } from '../../../src/core/settings';
+import { setupTestApp } from '../../utils/setup-test-app';
 
 describe('Post API body validation check', () => {
-  const app = express();
-  setupApp(app);
+  let app: Express;
+  let authToken: string;
 
   const blogId = 'new blog id';
   const correctTestPostData: TPostInputDto = getPostDto(blogId);
-  const adminToken = generateBasicAuthToken();
   const errorsLength = Object.keys(correctTestPostData).length;
 
   beforeAll(async () => {
-    await runDB(SETTINGS.MONGO_URL);
-    await clearDb(app);
+    ({ app, authToken } = await setupTestApp());
   });
 
   it('POST /api/posts; не должен создавать post с некорректным body', async () => {
@@ -42,7 +36,7 @@ describe('Post API body validation check', () => {
     };
     const invalidDataSetRequest1 = await request(app)
       .post(POSTS_PATH)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet1)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -58,7 +52,7 @@ describe('Post API body validation check', () => {
     };
     const invalidDataSetRequest2 = await request(app)
       .post(POSTS_PATH)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet2)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -74,7 +68,7 @@ describe('Post API body validation check', () => {
     };
     const invalidDataSetRequest3 = await request(app)
       .post(POSTS_PATH)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet3)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -87,8 +81,12 @@ describe('Post API body validation check', () => {
   });
 
   it('PUT /api/posts/:id; не должен изменять post с некорректным body', async () => {
-    const createdBlog = await createBlog(app);
-    const createdPost = await createPost(app, createdBlog);
+    const createdBlog = await createBlog({ app, authToken });
+    const createdPost = await createPost({
+      app,
+      authToken,
+      blogOutput: createdBlog,
+    });
 
     const invalidDataSet1: TPostInputDto = {
       title: '',
@@ -98,7 +96,7 @@ describe('Post API body validation check', () => {
     };
     const invalidDataSetRequest1 = await request(app)
       .put(`${POSTS_PATH}/${createdPost.id}`)
-      .set('Authorization', generateBasicAuthToken())
+      .set('Authorization', authToken)
       .send(invalidDataSet1)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -114,7 +112,7 @@ describe('Post API body validation check', () => {
     };
     const invalidDataSetRequest2 = await request(app)
       .put(`${POSTS_PATH}/${createdPost.id}`)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet2)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -130,7 +128,7 @@ describe('Post API body validation check', () => {
     };
     const invalidDataSetRequest3 = await request(app)
       .put(`${POSTS_PATH}/${createdPost.id}`)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet3)
       .expect(EHttpStatus.BAD_REQUEST_400);
 

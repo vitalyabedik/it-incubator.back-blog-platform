@@ -8,26 +8,27 @@ import { createPostHandler } from './handlers/create-post.handler';
 import { updatePostHandler } from './handlers/update-post.handler';
 import { deletePostHandler } from './handlers/delete-post.handler';
 import { postInputDtoValidation } from '../validation/post.input-dto.validation-middlewares';
+import { routersPaths } from '../../core/constants/paths';
 
 export const postsRouter = Router({});
 
 postsRouter
-  .get('', getPostListHandler)
+  .get(routersPaths.empty, getPostListHandler)
   .get(
-    '/:id',
+    routersPaths.byId,
     paramsIdValidationMiddleware,
     inputValidationResultMiddleware,
     getPostHandler,
   )
   .post(
-    '',
+    routersPaths.empty,
     superAdminGuardMiddleware,
     postInputDtoValidation,
     inputValidationResultMiddleware,
     createPostHandler,
   )
   .put(
-    '/:id',
+    routersPaths.byId,
     superAdminGuardMiddleware,
     paramsIdValidationMiddleware,
     postInputDtoValidation,
@@ -35,7 +36,7 @@ postsRouter
     updatePostHandler,
   )
   .delete(
-    '/:id',
+    routersPaths.byId,
     superAdminGuardMiddleware,
     paramsIdValidationMiddleware,
     inputValidationResultMiddleware,

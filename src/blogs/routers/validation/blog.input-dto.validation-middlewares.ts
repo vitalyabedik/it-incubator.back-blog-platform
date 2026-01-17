@@ -1,15 +1,15 @@
-import { EBlogValidationField } from '../constants/errors';
+import { EBlogValidationField } from '../../constants/errors';
 import {
   BLOG_DESCRIPTION_MAX_FIELD_LENGTH,
   BLOG_NAME_MAX_FIELD_LENGTH,
   BLOG_WEBSITE_URL_MAX_FIELD_LENGTH,
   validationMessages,
-} from '../constants/validation';
-import { URL_REGEXP } from '../../core/constants/regExp';
+} from '../../constants/validation';
+import { URL_REGEXP } from '../../../core/constants/regExp';
 import {
   validateBaseISOStringDateField,
   validateBaseStringField,
-} from '../../core/utils/validation';
+} from '../../../core/utils/validation';
 import { body } from 'express-validator';
 
 const nameValidation = validateBaseStringField(EBlogValidationField.NAME, {

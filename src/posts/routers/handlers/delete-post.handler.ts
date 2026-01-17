@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { EHttpStatus } from '../../../core/constants/http';
 import { TRequestWithParams } from '../../../core/types/request';
+import { errorsHandler } from '../../../core/errors/errors.handler';
 import { postsRepository } from '../../repositories/posts.repositories';
 import { TDeletePostParams } from '../../types';
 
@@ -20,8 +21,6 @@ export const deletePostHandler = async (
     await postsRepository.delete(postId);
     res.sendStatus(EHttpStatus.NO_CONTENT_204);
   } catch (error: unknown) {
-    console.log(error);
-
-    res.sendStatus(EHttpStatus.INTERNAL_SERVER_ERROR_500);
+    errorsHandler(error, res);
   }
 };
