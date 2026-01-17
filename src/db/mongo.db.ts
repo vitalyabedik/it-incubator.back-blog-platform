@@ -1,6 +1,6 @@
 import { Collection, Db, MongoClient } from 'mongodb';
-import { TBlog } from '../blogs/types';
-import { TPost } from '../posts/types';
+import { TBlog } from '../blogs/domain/blog';
+import { TPost } from '../posts/domain/post';
 import { SETTINGS } from '../core/settings';
 
 const CONNECTED_DB_MESSAGE = 'Connected to the database';

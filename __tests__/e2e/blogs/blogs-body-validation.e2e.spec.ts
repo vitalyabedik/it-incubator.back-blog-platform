@@ -1,34 +1,37 @@
 import request from 'supertest';
-import express from 'express';
-import { setupApp } from './../../../src/setup-app';
-import { clearDb } from '../../utils/clear-db';
-import { TBlogInputDto } from '../../../src/blogs/dto/blogs.input-dto';
-import { getBlogDto } from '../../utils/blogs/get-blog-dto';
-import { createBlog } from '../../utils/blogs/create-blog';
+import { Express } from 'express';
 import { BLOGS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { getBlogById } from '../../utils/blogs/get-blog-by-id';
-import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
 import {
   BLOG_DESCRIPTION_MAX_FIELD_LENGTH,
   BLOG_NAME_MAX_FIELD_LENGTH,
   BLOG_WEBSITE_URL_MAX_FIELD_LENGTH,
 } from '../../../src/blogs/constants/validation';
-import { TBlogViewModel } from '../../../src/blogs/types';
-import { runDB, stopDB } from '../../../src/db/mongo.db';
-import { SETTINGS } from '../../../src/core/settings';
+import { stopDB } from '../../../src/db/mongo.db';
+import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
+import { TBlogCreateInput } from '../../../src/blogs/routers/input/blog-create.input';
+import { TBlogUpdateInput } from '../../../src/blogs/routers/input/blog-update.input';
+import { getBlogDto } from '../../utils/blogs/get-blog-dto';
+import { createBlog } from '../../utils/blogs/create-blog';
+import { getBlogById } from '../../utils/blogs/get-blog-by-id';
+import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
+import { setupTestApp } from '../../utils/setup-test-app';
+import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
+import {
+  POST_CONTENT_MAX_FIELD_LENGTH,
+  POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH,
+  POST_TITLE_MAX_FIELD_LENGTH,
+} from '../../../src/posts/constants/validation';
 
 describe('Blog API body validation check', () => {
-  const app = express();
-  setupApp(app);
+  let app: Express;
+  let authToken: string;
 
-  const correctTestBlogData: TBlogInputDto = getBlogDto();
-  const adminToken = generateBasicAuthToken();
+  const correctTestBlogData: TBlogCreateInput = getBlogDto();
   const errorsLength = Object.keys(correctTestBlogData).length;
 
   beforeAll(async () => {
-    await runDB(SETTINGS.MONGO_URL);
-    await clearDb(app);
+    ({ app, authToken } = await setupTestApp());
   });
 
   afterAll(async () => {
@@ -36,14 +39,14 @@ describe('Blog API body validation check', () => {
   });
 
   it('POST /api/blogs; не должен создавать blog с некорректным body', async () => {
-    const invalidDataSet1: TBlogInputDto = {
+    const invalidDataSet1: TBlogCreateInput = {
       name: '',
       description: '',
       websiteUrl: '',
     };
     const invalidDataSetRequest1 = await request(app)
       .post(BLOGS_PATH)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet1)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -51,14 +54,14 @@ describe('Blog API body validation check', () => {
       errorsLength,
     );
 
-    const invalidDataSet2: TBlogInputDto = {
+    const invalidDataSet2: TBlogCreateInput = {
       name: '         ',
       description: '       ',
       websiteUrl: 'incorrect-URL.com',
     };
     const invalidDataSetRequest2 = await request(app)
       .post(BLOGS_PATH)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet2)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -66,14 +69,14 @@ describe('Blog API body validation check', () => {
       errorsLength,
     );
 
-    const invalidDataSet3: TBlogInputDto = {
+    const invalidDataSet3: TBlogCreateInput = {
       name: '1'.repeat(BLOG_NAME_MAX_FIELD_LENGTH + 1),
       description: '2'.repeat(BLOG_DESCRIPTION_MAX_FIELD_LENGTH + 1),
       websiteUrl: `https://${'1'.repeat(BLOG_WEBSITE_URL_MAX_FIELD_LENGTH + 1)}.com`,
     };
     const invalidDataSetRequest3 = await request(app)
       .post(BLOGS_PATH)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet3)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -82,13 +85,77 @@ describe('Blog API body validation check', () => {
     );
 
     const blogListResponse = await request(app).get(BLOGS_PATH);
-    expect(blogListResponse.body).toHaveLength(0);
+    expect(blogListResponse.body.items).toHaveLength(0);
+  });
+
+  it('POST /api/blogs/:blogId/posts; не должен создавать post для blog с некорректным body', async () => {
+    const createdBlog = await createBlog({ app, authToken });
+
+    const invalidDataSet1: TPostCreateInput = {
+      title: '',
+      shortDescription: '',
+      content: '',
+      blogId: '',
+    };
+    const postErrorsLength = Object.keys(invalidDataSet1).length;
+    const invalidDataSetRequest1 = await request(app)
+      .post(`${BLOGS_PATH}/${createdBlog.id}/posts`)
+      .set('Authorization', authToken)
+      .send(invalidDataSet1)
+      .expect(EHttpStatus.BAD_REQUEST_400);
+
+    expect(invalidDataSetRequest1.body.errorsMessages).toHaveLength(
+      postErrorsLength,
+    );
+
+    const invalidDataSet2: TPostCreateInput = {
+      title: '         ',
+      shortDescription: '       ',
+      content: '       ',
+      blogId: '       ',
+    };
+    const invalidDataSetRequest2 = await request(app)
+      .post(`${BLOGS_PATH}/${createdBlog.id}/posts`)
+      .set('Authorization', authToken)
+      .send(invalidDataSet2)
+      .expect(EHttpStatus.BAD_REQUEST_400);
+
+    expect(invalidDataSetRequest2.body.errorsMessages).toHaveLength(
+      postErrorsLength,
+    );
+
+    const invalidDataSet3: TPostCreateInput = {
+      title: '1'.repeat(POST_TITLE_MAX_FIELD_LENGTH + 1),
+      shortDescription: '2'.repeat(POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH + 1),
+      content: '3'.repeat(POST_CONTENT_MAX_FIELD_LENGTH + 1),
+      blogId: '       ',
+    };
+    const invalidDataSetRequest3 = await request(app)
+      .post(`${BLOGS_PATH}/${createdBlog.id}/posts`)
+      .set('Authorization', authToken)
+      .send(invalidDataSet3)
+      .expect(EHttpStatus.BAD_REQUEST_400);
+
+    expect(invalidDataSetRequest3.body.errorsMessages).toHaveLength(
+      postErrorsLength,
+    );
+
+    const postListResponse = await request(app).get(
+      `${BLOGS_PATH}/${createdBlog.id}/posts`,
+    );
+
+    expect(postListResponse.body.items).toHaveLength(0);
+    expect(postListResponse.body.totalCount).toBe(0);
   });
 
   it('PUT /api/blogs/:id; не должен изменять blog с некорректным body', async () => {
-    const createdBlog = await createBlog(app, correctTestBlogData);
+    const createdBlog = await createBlog({
+      app,
+      authToken,
+      blogDto: correctTestBlogData,
+    });
 
-    const invalidDataSet1: TBlogInputDto = {
+    const invalidDataSet1: TBlogUpdateInput = {
       name: '',
       description: '',
       websiteUrl: '',
@@ -103,14 +170,14 @@ describe('Blog API body validation check', () => {
       errorsLength,
     );
 
-    const invalidDataSet2: TBlogInputDto = {
+    const invalidDataSet2: TBlogUpdateInput = {
       name: '         ',
       description: '       ',
       websiteUrl: 'incorrect-URL.com',
     };
     const invalidDataSetRequest2 = await request(app)
       .put(`${BLOGS_PATH}/${createdBlog.id}`)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet2)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -118,14 +185,14 @@ describe('Blog API body validation check', () => {
       errorsLength,
     );
 
-    const invalidDataSet3: TBlogInputDto = {
+    const invalidDataSet3: TBlogUpdateInput = {
       name: '1'.repeat(BLOG_NAME_MAX_FIELD_LENGTH + 1),
       description: '2'.repeat(BLOG_DESCRIPTION_MAX_FIELD_LENGTH + 1),
       websiteUrl: `https://${'1'.repeat(BLOG_WEBSITE_URL_MAX_FIELD_LENGTH + 1)}.com`,
     };
     const invalidDataSetRequest3 = await request(app)
       .put(`${BLOGS_PATH}/${createdBlog.id}`)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .send(invalidDataSet3)
       .expect(EHttpStatus.BAD_REQUEST_400);
 
@@ -135,7 +202,7 @@ describe('Blog API body validation check', () => {
 
     const blogResponse = await getBlogById(app, createdBlog.id);
 
-    const expectedBlogData: TBlogViewModel = {
+    const expectedBlogData: TBlogOutput = {
       ...correctTestBlogData,
       id: createdBlog.id,
       createdAt: blogResponse.createdAt,

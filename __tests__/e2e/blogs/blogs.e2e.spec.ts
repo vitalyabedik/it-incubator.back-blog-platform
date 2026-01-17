@@ -1,54 +1,108 @@
 import request from 'supertest';
-import express from 'express';
-import { setupApp } from './../../../src/setup-app';
-import { clearDb } from '../../utils/clear-db';
-import { TBlogInputDto } from '../../../src/blogs/dto/blogs.input-dto';
-import { getBlogDto } from '../../utils/blogs/get-blog-dto';
-import { createBlog } from '../../utils/blogs/create-blog';
+import { Express } from 'express';
 import { BLOGS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
+import { TBlogCreateInput } from '../../../src/blogs/routers/input/blog-create.input';
+import { TBlogUpdateInput } from '../../../src/blogs/routers/input/blog-update.input';
+import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
+import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
+import { stopDB } from '../../../src/db/mongo.db';
+import { getBlogDto } from '../../utils/blogs/get-blog-dto';
+import { createBlog } from '../../utils/blogs/create-blog';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
 import { updateBlog } from '../../utils/blogs/update-blog';
-import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
-import { TBlogViewModel } from '../../../src/blogs/types';
-import { runDB } from '../../../src/db/mongo.db';
-import { SETTINGS } from '../../../src/core/settings';
+import { setupTestApp } from '../../utils/setup-test-app';
+import { getPostDto } from '../../utils/posts/get-post-dto';
+import { createPostByBlogId } from '../../utils/blogs/create-post-by-blogId';
 
 describe('Blog API', () => {
-  const app = express();
-  setupApp(app);
-
-  const adminToken = generateBasicAuthToken();
+  let app: Express;
+  let authToken: string;
 
   beforeAll(async () => {
-    await runDB(SETTINGS.MONGO_URL);
-    await clearDb(app);
+    ({ app, authToken } = await setupTestApp());
+  });
+
+  afterAll(async () => {
+    await stopDB();
   });
 
   it('POST /api/blogs; должен создавать blog', async () => {
-    const newBlog: TBlogInputDto = {
+    const newBlog: TBlogCreateInput = {
       ...getBlogDto(),
       name: 'new blog name',
       description: 'new blog description',
     };
 
-    await createBlog(app, newBlog);
+    await createBlog({ app, authToken, blogDto: newBlog });
+  });
+
+  it('POST /api/blogs/:blogId/posts; должен создавать post для blog по blogId', async () => {
+    const createdBlog = await createBlog({ app, authToken });
+
+    const newPost: TPostCreateInput = {
+      ...getPostDto(createdBlog.id),
+      title: 'new post title',
+      shortDescription: 'new post shortDescription',
+      content: 'new post content',
+      blogId: createdBlog.id,
+    };
+
+    await createPostByBlogId({
+      app,
+      authToken,
+      blogOutput: createdBlog,
+      postDto: newPost,
+    });
   });
 
   it('GET /api/blogs; должен возвращать blog list', async () => {
-    await createBlog(app);
-    await createBlog(app);
+    await createBlog({ app, authToken });
+    await createBlog({ app, authToken });
 
     const response = await request(app)
       .get(BLOGS_PATH)
       .expect(EHttpStatus.OK_200);
 
-    expect(response.body).toBeInstanceOf(Array);
-    expect(response.body.length).toBeGreaterThanOrEqual(2);
+    expect(response.body.items).toBeInstanceOf(Array);
+    expect(response.body.items.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('GET /api/blogs/:blogId/posts; должен возвращать post list по blogId', async () => {
+    const createdBlog = await createBlog({ app, authToken });
+
+    const newPost: TPostCreateInput = {
+      ...getPostDto(createdBlog.id),
+      title: 'new post title',
+      shortDescription: 'new post shortDescription',
+      content: 'new post content',
+      blogId: createdBlog.id,
+    };
+
+    await createPostByBlogId({
+      app,
+      authToken,
+      blogOutput: createdBlog,
+      postDto: newPost,
+    });
+    await createPostByBlogId({
+      app,
+      authToken,
+      blogOutput: createdBlog,
+      postDto: newPost,
+    });
+
+    const response = await request(app)
+      .get(`${BLOGS_PATH}/${createdBlog.id}/posts`)
+      .expect(EHttpStatus.OK_200);
+
+    expect(response.body.items).toBeInstanceOf(Array);
+    expect(response.body.items.length).toBeGreaterThanOrEqual(2);
+    expect(response.body.totalCount).toBe(2);
   });
 
   it('GET /api/blogs/:id; должен возвращать blog по id', async () => {
-    const createdBlog = await createBlog(app);
+    const createdBlog = await createBlog({ app, authToken });
 
     const blog = await getBlogById(app, createdBlog.id);
 
@@ -59,19 +113,24 @@ describe('Blog API', () => {
   });
 
   it('PUT /api/blogs/:id; должен корректно изменять blog по id', async () => {
-    const createdBlog = await createBlog(app);
+    const createdBlog = await createBlog({ app, authToken });
 
-    const blogUpdateData: TBlogInputDto = {
+    const blogUpdateData: TBlogUpdateInput = {
       name: 'updated name',
       description: 'updated description',
       websiteUrl: 'https://updated-url.com',
     };
 
-    await updateBlog(app, createdBlog.id, blogUpdateData);
+    await updateBlog({
+      app,
+      authToken,
+      blogId: createdBlog.id,
+      blogDto: blogUpdateData,
+    });
 
     const blogResponse = await getBlogById(app, createdBlog.id);
 
-    const expectedBlogData: TBlogViewModel = {
+    const expectedBlogData: TBlogOutput = {
       ...blogUpdateData,
       id: createdBlog.id,
       createdAt: blogResponse.createdAt,
@@ -82,11 +141,11 @@ describe('Blog API', () => {
   });
 
   it('DELETE /api/blogs/:id; должен удалять blog по id', async () => {
-    const createdBlog = await createBlog(app);
+    const createdBlog = await createBlog({ app, authToken });
 
     await request(app)
       .delete(`${BLOGS_PATH}/${createdBlog.id}`)
-      .set('Authorization', adminToken)
+      .set('Authorization', authToken)
       .expect(EHttpStatus.NO_CONTENT_204);
 
     await request(app)

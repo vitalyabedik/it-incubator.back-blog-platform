@@ -1,32 +1,24 @@
 import { Response } from 'express';
-import { blogsRepository } from '../../repositories/blogs.repositories';
 import { TRequestWithBody } from '../../../core/types/request';
 import { EHttpStatus } from '../../../core/constants/http';
-import { TBlogInputDto } from '../../dto/blogs.input-dto';
-import { TBlog } from '../../types';
-import { mapToBlogViewModel } from '../mappers/map-to-blog-view-model.util';
+import { errorsHandler } from '../../../core/errors/errors.handler';
+import { blogsService } from '../../application/blogs.service';
+import { mapToBlogOutput } from '../mappers/map-to-blog-output.util';
+import { TBlogCreateInput } from '../input/blog-create.input';
 
 export const createBlogHandler = async (
-  req: TRequestWithBody<TBlogInputDto>,
+  req: TRequestWithBody<TBlogCreateInput>,
   res: Response,
 ) => {
   try {
-    const { name, description, websiteUrl } = req.body;
+    const createdBlogId = await blogsService.create(req.body);
 
-    const newBlog: TBlog = {
-      name,
-      description,
-      websiteUrl,
-      createdAt: new Date().toISOString(),
-      isMembership: false,
-    };
+    const createdBlog = await blogsService.getBlogById(createdBlogId);
 
-    const createdBlog = await blogsRepository.create(newBlog);
-    const blogViewModel = mapToBlogViewModel(createdBlog);
-    res.status(EHttpStatus.CREATED_201).send(blogViewModel);
+    const blogOutput = mapToBlogOutput(createdBlog);
+
+    res.status(EHttpStatus.CREATED_201).send(blogOutput);
   } catch (error: unknown) {
-    console.log(error);
-
-    res.sendStatus(EHttpStatus.INTERNAL_SERVER_ERROR_500);
+    errorsHandler(error, res);
   }
 };

@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import {
   FieldValidationError,
   ValidationError,
@@ -6,8 +6,9 @@ import {
 } from 'express-validator';
 import { TFieldError } from '../../types/error';
 import { EHttpStatus } from '../../constants/http';
+import { TRequestWithoutAll } from '../../types/request';
 
-const formatErrors = (error: ValidationError): TFieldError => {
+const formatValidationError = (error: ValidationError): TFieldError => {
   const { path, msg } = error as unknown as FieldValidationError;
 
   return {
@@ -17,12 +18,12 @@ const formatErrors = (error: ValidationError): TFieldError => {
 };
 
 export const inputValidationResultMiddleware = (
-  req: Request,
+  req: TRequestWithoutAll,
   res: Response,
   next: NextFunction,
 ) => {
   const errors = validationResult(req)
-    .formatWith(formatErrors)
+    .formatWith(formatValidationError)
     .array({ onlyFirstError: true });
 
   if (errors.length > 0) {

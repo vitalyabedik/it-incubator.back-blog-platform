@@ -1,6 +1,6 @@
-import { TBlogInputDto } from '../../../src/blogs/dto/blogs.input-dto';
+import { TBlogCreateInput } from '../../../src/blogs/routers/input/blog-create.input';
 
-export const getBlogDto = (): TBlogInputDto => {
+export const getBlogDto = (): TBlogCreateInput => {
   return {
     name: 'default name',
     description: 'default blog description',

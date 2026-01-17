@@ -1,14 +1,14 @@
-import { EPostValidationField } from '../constants/errors';
+import { EPostValidationField } from '../../constants/errors';
 import {
   POST_CONTENT_MAX_FIELD_LENGTH,
   POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH,
   POST_TITLE_MAX_FIELD_LENGTH,
   validationMessages,
-} from '../constants/validation';
+} from '../../constants/validation';
 import {
   validateBaseISOStringDateField,
   validateBaseStringField,
-} from '../../core/utils/validation';
+} from '../../../core/utils/validation';
 
 const titleValidation = validateBaseStringField(EPostValidationField.TITLE, {
   texts: {

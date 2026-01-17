@@ -2,7 +2,7 @@ import express, { Express } from 'express';
 import {
   BLOGS_PATH,
   POSTS_PATH,
-  ERoutePath,
+  routersPaths,
   TESTING_PATH,
 } from './core/constants/paths';
 import { EHttpStatus } from './core/constants/http';
@@ -15,7 +15,7 @@ const MAIN_MESSAGE = 'Hello Blog Platform!';
 export const setupApp = (app: Express) => {
   app.use(express.json());
 
-  app.get(ERoutePath.Main, (_, res) => {
+  app.get(routersPaths.root, (_, res) => {
     res.status(EHttpStatus.OK_200).send(MAIN_MESSAGE);
   });
 

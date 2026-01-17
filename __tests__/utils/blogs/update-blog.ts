@@ -1,23 +1,30 @@
 import request from 'supertest';
 import { Express } from 'express';
-import { TBlogInputDto } from '../../../src/blogs/dto/blogs.input-dto';
-import { getBlogDto } from './get-blog-dto';
+import { TBlogUpdateInput } from '../../../src/blogs/routers/input/blog-update.input';
 import { BLOGS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { generateBasicAuthToken } from '../generate-admin-auth-token';
+import { getBlogDto } from './get-blog-dto';
 
-export const updateBlog = async (
-  app: Express,
-  blogId: string,
-  blogDto?: TBlogInputDto,
-): Promise<void> => {
-  const defaultBlogData: TBlogInputDto = getBlogDto();
+type TUpdateBlogArgs = {
+  app: Express;
+  authToken: string;
+  blogId: string;
+  blogDto?: TBlogUpdateInput;
+};
+
+export const updateBlog = async ({
+  app,
+  authToken,
+  blogId,
+  blogDto,
+}: TUpdateBlogArgs): Promise<void> => {
+  const defaultBlogData: TBlogUpdateInput = getBlogDto();
 
   const testBlogData = { ...defaultBlogData, ...blogDto };
 
   const updatedBlogResponse = await request(app)
     .put(`${BLOGS_PATH}/${blogId}`)
-    .set('Authorization', generateBasicAuthToken())
+    .set('Authorization', authToken)
     .send(testBlogData)
     .expect(EHttpStatus.NO_CONTENT_204);
 
