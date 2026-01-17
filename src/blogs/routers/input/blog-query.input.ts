@@ -3,5 +3,5 @@ import { EBlogSortField } from './blog-sort-field';
 
 export type TBlogQueryInput = TPaginationAndSorting<EBlogSortField> &
   Partial<{
-    searchBlogTitleTerm: string;
+    searchNameTerm: string;
   }>;

@@ -10,11 +10,11 @@ type TBlogFilter = Filter<TBlog> & {
 };
 
 export const createBlogFilter = (queryDto: TBlogQueryInput): TBlogFilter => {
-  const { searchBlogTitleTerm } = queryDto;
+  const { searchNameTerm } = queryDto;
   const filter: TBlogFilter = {};
 
-  if (searchBlogTitleTerm) {
-    filter.title = { $regex: searchBlogTitleTerm, $options: 'i' };
+  if (searchNameTerm) {
+    filter.title = { $regex: searchNameTerm, $options: 'i' };
   }
 
   return filter;
