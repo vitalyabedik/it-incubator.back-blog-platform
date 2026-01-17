@@ -2,12 +2,14 @@ import request from 'supertest';
 import { Express } from 'express';
 import { POSTS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { TPostInputDto } from '../../../src/posts/dto/posts.input-dto';
+import { TPostOutput } from '../../../src/posts/routers/output/post.output';
+import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
+import { TPostUpdateInput } from '../../../src/posts/routers/input/post-update.input';
+import { stopDB } from '../../../src/db/mongo.db';
 import { getPostDto } from '../../utils/posts/get-post-dto';
 import { createPost } from '../../utils/posts/create-post';
 import { updatePost } from '../../utils/posts/update-post';
 import { getPostById } from '../../utils/posts/get-post-by-id';
-import { TPostViewModel } from '../../../src/posts/types';
 import { createBlog } from '../../utils/blogs/create-blog';
 import { setupTestApp } from '../../utils/setup-test-app';
 
@@ -19,10 +21,14 @@ describe('Post API', () => {
     ({ app, authToken } = await setupTestApp());
   });
 
+  afterAll(async () => {
+    await stopDB();
+  });
+
   it('POST /api/posts; должен создавать post', async () => {
     const createdBlog = await createBlog({ app, authToken });
 
-    const newPost: TPostInputDto = {
+    const newPost: TPostCreateInput = {
       ...getPostDto(createdBlog.id),
       title: 'new post title',
       shortDescription: 'new post shortDescription',
@@ -48,8 +54,8 @@ describe('Post API', () => {
       .get(POSTS_PATH)
       .expect(EHttpStatus.OK_200);
 
-    expect(response.body).toBeInstanceOf(Array);
-    expect(response.body.length).toBeGreaterThanOrEqual(2);
+    expect(response.body.items).toBeInstanceOf(Array);
+    expect(response.body.items.length).toBeGreaterThanOrEqual(2);
   });
 
   it('GET /api/posts/:id; должен возвращать post по id', async () => {
@@ -76,7 +82,7 @@ describe('Post API', () => {
       blogOutput: createdBlog,
     });
 
-    const postUpdateData: TPostInputDto = {
+    const postUpdateData: TPostUpdateInput = {
       title: 'updated title',
       shortDescription: 'updated shortDescription',
       content: 'updated content',
@@ -92,7 +98,7 @@ describe('Post API', () => {
 
     const postResponse = await getPostById(app, createdPost.id);
 
-    const expectedPostData: TPostViewModel = {
+    const expectedPostData: TPostOutput = {
       ...postUpdateData,
       id: createdPost.id,
       blogId: createdPost.blogId,

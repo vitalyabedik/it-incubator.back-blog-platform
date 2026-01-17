@@ -15,3 +15,8 @@ export type TPagination = {
 };
 
 export type TPaginationMeta = Omit<TPagination, 'pageCount'>;
+
+export type TBasePaginationOutput<T> = {
+  items: T[];
+  totalCount: number;
+};

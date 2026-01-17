@@ -2,7 +2,7 @@ import request from 'supertest';
 import { Express } from 'express';
 import { POSTS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { TPostInputDto } from '../../../src/posts/dto/posts.input-dto';
+import { TPostUpdateInput } from '../../../src/posts/routers/input/post-update.input';
 import { createBlog } from '../blogs/create-blog';
 import { getPostDto } from './get-post-dto';
 
@@ -10,7 +10,7 @@ type TUpdatePostArgs = {
   app: Express;
   authToken: string;
   postId: string;
-  postDto?: TPostInputDto;
+  postDto?: TPostUpdateInput;
 };
 
 export const updatePost = async ({
@@ -20,7 +20,7 @@ export const updatePost = async ({
   postDto,
 }: TUpdatePostArgs): Promise<void> => {
   const createdBlog = await createBlog({ app, authToken });
-  const defaultPostData: TPostInputDto = getPostDto(createdBlog.id);
+  const defaultPostData: TPostUpdateInput = getPostDto(createdBlog.id);
 
   const testPostData = { ...defaultPostData, ...postDto };
 

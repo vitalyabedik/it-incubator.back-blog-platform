@@ -2,24 +2,17 @@ import { Response } from 'express';
 import { EHttpStatus } from '../../../core/constants/http';
 import { TRequestWithParamsAndBody } from '../../../core/types/request';
 import { errorsHandler } from '../../../core/errors/errors.handler';
-import { postsRepository } from '../../repositories/posts.repositories';
-import { TDeletePostParams } from '../../types';
-import { TPostInputDto } from '../../dto/posts.input-dto';
+import { TPostUpdateInput } from '../input/post-update.input';
+import { TDeletePostParams } from './params/delete-post-params';
+import { postsService } from '../../application/posts.service';
 
 export const updatePostHandler = async (
-  req: TRequestWithParamsAndBody<TDeletePostParams, TPostInputDto>,
+  req: TRequestWithParamsAndBody<TDeletePostParams, TPostUpdateInput>,
   res: Response,
 ) => {
   try {
-    const postId = req.params.id;
-    const post = await postsRepository.findById(postId);
+    await postsService.update(req.params.id, req.body);
 
-    if (!post) {
-      res.sendStatus(EHttpStatus.NOT_FOUND_404);
-      return;
-    }
-
-    await postsRepository.update(postId, req.body);
     res.sendStatus(EHttpStatus.NO_CONTENT_204);
   } catch (error: unknown) {
     errorsHandler(error, res);

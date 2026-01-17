@@ -1,7 +1,5 @@
 import request from 'supertest';
 import { Express } from 'express';
-import { getBlogDto } from '../../utils/blogs/get-blog-dto';
-import { createBlog } from '../../utils/blogs/create-blog';
 import { BLOGS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
 import {
@@ -13,6 +11,8 @@ import { stopDB } from '../../../src/db/mongo.db';
 import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
 import { TBlogCreateInput } from '../../../src/blogs/routers/input/blog-create.input';
 import { TBlogUpdateInput } from '../../../src/blogs/routers/input/blog-update.input';
+import { getBlogDto } from '../../utils/blogs/get-blog-dto';
+import { createBlog } from '../../utils/blogs/create-blog';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
 import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
 import { setupTestApp } from '../../utils/setup-test-app';

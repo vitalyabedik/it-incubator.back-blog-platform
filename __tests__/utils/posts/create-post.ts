@@ -2,16 +2,16 @@ import request from 'supertest';
 import { Express } from 'express';
 import { POSTS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { TPostInputDto } from '../../../src/posts/dto/posts.input-dto';
 import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
-import { TPostViewModel } from '../../../src/posts/types';
+import { TPostOutput } from '../../../src/posts/routers/output/post.output';
+import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
 import { getPostDto } from './get-post-dto';
 
 type TCreatePostArgs = {
   app: Express;
   authToken: string;
   blogOutput: TBlogOutput;
-  postDto?: TPostInputDto;
+  postDto?: TPostCreateInput;
 };
 
 export const createPost = async ({
@@ -19,8 +19,8 @@ export const createPost = async ({
   authToken,
   blogOutput,
   postDto,
-}: TCreatePostArgs): Promise<TPostViewModel> => {
-  const defaultPostData: TPostInputDto = await getPostDto(blogOutput.id);
+}: TCreatePostArgs): Promise<TPostOutput> => {
+  const defaultPostData: TPostCreateInput = await getPostDto(blogOutput.id);
 
   const testPostData = {
     ...defaultPostData,

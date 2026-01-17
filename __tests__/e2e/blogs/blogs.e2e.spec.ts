@@ -1,14 +1,15 @@
 import request from 'supertest';
 import { Express } from 'express';
-import { getBlogDto } from '../../utils/blogs/get-blog-dto';
-import { createBlog } from '../../utils/blogs/create-blog';
 import { BLOGS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { getBlogById } from '../../utils/blogs/get-blog-by-id';
-import { updateBlog } from '../../utils/blogs/update-blog';
 import { TBlogCreateInput } from '../../../src/blogs/routers/input/blog-create.input';
 import { TBlogUpdateInput } from '../../../src/blogs/routers/input/blog-update.input';
 import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
+import { stopDB } from '../../../src/db/mongo.db';
+import { getBlogDto } from '../../utils/blogs/get-blog-dto';
+import { createBlog } from '../../utils/blogs/create-blog';
+import { getBlogById } from '../../utils/blogs/get-blog-by-id';
+import { updateBlog } from '../../utils/blogs/update-blog';
 import { setupTestApp } from '../../utils/setup-test-app';
 
 describe('Blog API', () => {
@@ -17,6 +18,10 @@ describe('Blog API', () => {
 
   beforeAll(async () => {
     ({ app, authToken } = await setupTestApp());
+  });
+
+  afterAll(async () => {
+    await stopDB();
   });
 
   it('POST /api/blogs; должен создавать blog', async () => {

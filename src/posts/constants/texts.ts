@@ -1,4 +1,4 @@
 export const errorMessages = {
-  noExist: 'Данного блога не существует',
-  notFound: 'Блог не найден',
+  noExist: 'Данного поста не существует',
+  notFound: 'Пост не найден',
 };

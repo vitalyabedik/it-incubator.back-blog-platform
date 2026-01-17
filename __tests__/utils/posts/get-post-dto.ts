@@ -1,6 +1,6 @@
-import { TPostInputDto } from '../../../src/posts/dto/posts.input-dto';
+import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
 
-export const getPostDto = (blogId: string): TPostInputDto => {
+export const getPostDto = (blogId: string): TPostCreateInput => {
   return {
     title: 'default post title',
     shortDescription: 'default post shortDescription',

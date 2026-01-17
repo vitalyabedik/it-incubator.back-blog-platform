@@ -1,13 +1,34 @@
-import { Request, Response } from 'express';
-import { postsRepository } from '../../repositories/posts.repositories';
+import { postsService } from './../../application/posts.service';
+import { matchedData } from 'express-validator';
+import { Response } from 'express';
 import { errorsHandler } from '../../../core/errors/errors.handler';
-import { mapToPostViewModel } from '../mappers/map-to-post-view-model.util';
+import { TRequestWithQuery } from '../../../core/types/request';
+import { setDefaultSortAndPagination } from '../../../core/utils/set-default-sort-and-pagination';
+import { TPostQueryInput } from '../input/post-query.input';
+import { mapToPostListPaginatedOutput } from '../mappers/map-to-post-list-paginated-output.util copy';
 
-export const getPostListHandler = async (_: Request, res: Response) => {
+export const getPostListHandler = async (
+  req: TRequestWithQuery<TPostQueryInput>,
+  res: Response,
+) => {
   try {
-    const posts = await postsRepository.findAll();
-    const postsViewModel = posts.map(mapToPostViewModel);
-    res.send(postsViewModel);
+    const sanitizedQuery = matchedData<TPostQueryInput>(req, {
+      locations: ['query'],
+      includeOptionals: true,
+    });
+    const queryInput = setDefaultSortAndPagination(sanitizedQuery);
+
+    const { items, totalCount } = await postsService.getPostList(queryInput);
+
+    const postListOutput = mapToPostListPaginatedOutput(items, {
+      pagination: {
+        page: queryInput.pageNumber,
+        pageSize: queryInput.pageSize,
+        totalCount,
+      },
+    });
+
+    res.send(postListOutput);
   } catch (error: unknown) {
     errorsHandler(error, res);
   }
