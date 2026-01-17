@@ -1,11 +1,14 @@
 import { Router } from 'express';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validation-result.middleware';
-import { paramsIdValidationMiddleware } from '../../core/middlewares/validation/params-id.validation.middleware';
+import {
+  paramsBlogIdValidationMiddleware,
+  paramsIdValidationMiddleware,
+} from '../../core/middlewares/validation/params-id.validation.middleware';
 import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
 import { routersPaths } from '../../core/constants/paths';
 import { paginationAndSortingValidation } from '../../core/middlewares/validation/query-pagination-sorting.validation-middleware';
 import { EPostSortField } from '../../posts/routers/input/post-sort-field.input';
-import { postInputDtoValidation } from '../../posts/routers/validation/post.input-dto.validation-middlewares';
+import { postByBlogIdInputDtoValidation } from '../../posts/routers/validation/post.input-dto.validation-middlewares';
 import { getBlogListHandler } from './handlers/get-blog-list.handler';
 import { getBlogHandler } from './handlers/get-blog.handler';
 import { createBlogHandler } from './handlers/create-blog.handler';
@@ -26,6 +29,7 @@ blogsRouter
   )
   .get(
     routersPaths.blogs.allPostsByBlogId,
+    paramsBlogIdValidationMiddleware,
     paginationAndSortingValidation(EPostSortField),
     getPostListByBlogIdHandler,
   )
@@ -45,7 +49,7 @@ blogsRouter
   .post(
     routersPaths.blogs.allPostsByBlogId,
     superAdminGuardMiddleware,
-    postInputDtoValidation,
+    postByBlogIdInputDtoValidation,
     inputValidationResultMiddleware,
     createPostByBlogId,
   )

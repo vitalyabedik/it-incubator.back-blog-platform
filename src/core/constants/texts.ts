@@ -2,9 +2,12 @@ import { ESortDirection, MAX_PAGE_SIZE } from './paginationAndSort';
 import { FIELD_REQUIRED_LENGTH } from './validation';
 
 export const paramsErrorMessages = {
-  idRequired: 'ID обязательно для заполнения',
-  idStringType: 'ID должно быть строкой',
-  idObjectIdType: 'некорректный формат ObjectId',
+  idRequired: `id обязательно для заполнения`,
+  idStringType: `id должно быть строкой`,
+  idObjectIdType: `некорректный формат ObjectId для id`,
+  blogIdRequired: `blogId обязательно для заполнения`,
+  blogIdStringType: `blogId должно быть строкой`,
+  blogIdObjectIdType: `некорректный формат ObjectId для blogId`,
 };
 
 export const paginationAndSortErrorMessages = {

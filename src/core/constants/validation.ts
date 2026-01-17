@@ -1,7 +1,8 @@
 export const FIELD_REQUIRED_LENGTH = 1;
 
 export enum EValidationParams {
-  Id = 'id',
+  ID = 'id',
+  BLOG_ID = 'blogId',
 }
 
 export enum EValidationPaginationAndSort {

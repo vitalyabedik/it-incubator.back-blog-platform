@@ -70,3 +70,10 @@ export const postInputDtoValidation = [
   blogIdValidation,
   createdAtValidation,
 ];
+
+export const postByBlogIdInputDtoValidation = [
+  titleValidation,
+  shortDescriptionValidation,
+  contentValidation,
+  createdAtValidation,
+];
