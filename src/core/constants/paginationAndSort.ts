@@ -7,7 +7,7 @@ export enum ESortDirection {
 
 const DEFAULT_PAGE_NUMBER = 1;
 const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_SORT_DIRECTION = ESortDirection.DESC;
+const DEFAULT_SORT_DIRECTION = ESortDirection.ASC;
 const DEFAULT_SORT_BY = 'createdAt';
 
 export const paginationAndSortingDefault: TPaginationAndSorting<string> = {
