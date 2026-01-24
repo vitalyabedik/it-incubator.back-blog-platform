@@ -10,7 +10,7 @@ export const userInputFilterValidation = [
     .trim()
     .customSanitizer((value) => value || undefined),
 
-  query(EUserValidationFilter.SEARCH_LOGIN_TERM)
+  query(EUserValidationFilter.SEARCH_EMAIL_TERM)
     .optional()
     .isString()
     .withMessage(filterErrorMessages.searchEmailTerm)
