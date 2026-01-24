@@ -1,7 +1,9 @@
-import { TBlogRepositoryOutput } from '../../repositories/output/blog-repository.output';
+import { TBlogQueryRepositoryOutput } from '../../repositories/output/blog-query-repository.output';
 import { TBlogOutput } from '../output/blog.output';
 
-export const mapToBlogOutput = (blog: TBlogRepositoryOutput): TBlogOutput => ({
+export const mapToBlogOutput = (
+  blog: TBlogQueryRepositoryOutput,
+): TBlogOutput => ({
   id: blog._id.toString(),
   name: blog.name,
   description: blog.description,
