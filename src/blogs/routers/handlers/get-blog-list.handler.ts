@@ -6,7 +6,7 @@ import { setDefaultSortAndPagination } from '../../../core/utils/set-default-sor
 import { blogsService } from '../../application/blogs.service';
 import { TBlogQueryInput } from '../input/blog-query.input';
 import { mapToBlogListPaginatedOutput } from '../mappers/map-to-blog-list-paginated-output.util.ts';
-import { setDefaultFilters } from '../../../core/utils/set-default-filters';
+import { setDefaultBlogFilters } from './utils/set-default-blog-filters';
 
 export const getBlogListHandler = async (
   req: TRequestWithQuery<TBlogQueryInput>,
@@ -20,7 +20,7 @@ export const getBlogListHandler = async (
       });
     const queryInput = {
       ...setDefaultSortAndPagination(restPaginationAndSort),
-      ...setDefaultFilters({ searchNameTerm }),
+      ...setDefaultBlogFilters({ searchNameTerm }),
     };
 
     const { items, totalCount } = await blogsService.getBlogList(queryInput);
