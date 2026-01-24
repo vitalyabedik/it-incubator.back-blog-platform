@@ -13,15 +13,14 @@ export const getUserListHandler = async (
   res: Response,
 ) => {
   try {
-    const { searchLoginTerm, searchEmailTerm, ...restPaginationAndSort } =
-      matchedData<TUserQueryInput>(req, {
-        locations: ['query'],
-        includeOptionals: true,
-      });
-    const queryInput = {
-      ...setDefaultSortAndPagination(restPaginationAndSort),
-      ...setDefaultUserFilters({ searchLoginTerm, searchEmailTerm }),
-    };
+    const queryInput = matchedData<TUserQueryInput>(req, {
+      locations: ['query'],
+      includeOptionals: true,
+    });
+    // const queryInput = {
+    //   ...setDefaultSortAndPagination(restPaginationAndSort),
+    //   ...setDefaultUserFilters({ searchLoginTerm, searchEmailTerm }),
+    // };
 
     const { items, totalCount } =
       await usersQueryRepository.getUserList(queryInput);
