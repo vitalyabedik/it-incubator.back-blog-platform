@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { userCollection } from '../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
+import { getPaginationParams } from '../../core/utils/getPaginationParams';
 import { TUserQueryInput } from '../routes/input/user-query.input';
 import { errorMessages } from '../constants/texts';
 import { createUserFilter } from './utils/create-user-filter';
@@ -11,16 +12,14 @@ export const usersQueryRepository = {
   async getUserList(
     queryDto: TUserQueryInput,
   ): Promise<TUserListQueryRepositoryOutput> {
-    const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
-
-    const skip = (pageNumber - 1) * pageSize;
+    const { sort, skip, limit } = getPaginationParams(queryDto);
     const filter = createUserFilter(queryDto);
 
     const items = await userCollection
       .find(filter)
-      .sort({ [sortBy]: sortDirection })
+      .sort(sort)
       .skip(skip)
-      .limit(pageSize)
+      .limit(limit)
       .toArray();
 
     const totalCount = await userCollection.countDocuments(filter);

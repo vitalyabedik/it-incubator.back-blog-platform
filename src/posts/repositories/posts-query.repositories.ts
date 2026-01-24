@@ -4,21 +4,20 @@ import { TPostListQueryRepositoryOutput } from './output/post-list-query-reposit
 import { TPostQueryInput } from '../routers/input/post-query.input';
 import { TPostQueryRepositoryOutput } from './output/post-query-repository.output';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
+import { getPaginationParams } from '../../core/utils/getPaginationParams';
 import { errorMessages } from '../constants/texts';
 
 export const postsQueryRepository = {
   async getPostList(
     queryDto: TPostQueryInput,
   ): Promise<TPostListQueryRepositoryOutput> {
-    const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
-
-    const skip = (pageNumber - 1) * pageSize;
+    const { sort, skip, limit } = getPaginationParams(queryDto);
 
     const items = await postCollection
       .find()
-      .sort({ [sortBy]: sortDirection })
+      .sort(sort)
       .skip(skip)
-      .limit(pageSize)
+      .limit(limit)
       .toArray();
 
     const totalCount = await postCollection.countDocuments();

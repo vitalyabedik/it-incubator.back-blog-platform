@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { blogCollection } from '../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
+import { getPaginationParams } from '../../core/utils/getPaginationParams';
 import { errorMessages } from '../constants/texts';
 import { TBlogQueryInput } from '../routers/input/blog-query.input';
 import { createBlogFilter } from './utils/create-blog-filter';
@@ -11,16 +12,14 @@ export const blogsQueryRepository = {
   async getBlogList(
     queryDto: TBlogQueryInput,
   ): Promise<TBlogListQueryRepositoryOutput> {
-    const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
-
-    const skip = (pageNumber - 1) * pageSize;
+    const { sort, skip, limit } = getPaginationParams(queryDto);
     const filter = createBlogFilter(queryDto);
 
     const items = await blogCollection
       .find(filter)
-      .sort({ [sortBy]: sortDirection })
+      .sort(sort)
       .skip(skip)
-      .limit(pageSize)
+      .limit(limit)
       .toArray();
 
     const totalCount = await blogCollection.countDocuments(filter);
