@@ -9,6 +9,7 @@ import { routersPaths } from '../../core/constants/paths';
 import { blogInputDtoMiddleware } from '../middlewares/blog.input-dto.middleware';
 import { blogInputQueryMiddleware } from '../middlewares/blog.input-query.middleware';
 import { postByBlogIdInputDtoMiddleware } from '../../posts/middlewares/post.input-dto.middleware';
+import { postInputQueryMiddleware } from '../../posts/middlewares/post.input-query.middleware';
 import { getBlogListHandler } from './handlers/get-blog-list.handler';
 import { getBlogHandler } from './handlers/get-blog.handler';
 import { createBlogHandler } from './handlers/create-blog.handler';
@@ -24,7 +25,7 @@ blogsRouter
   .get(
     routersPaths.blogs.allPostsByBlogId,
     paramsBlogIdValidationMiddleware,
-    blogInputQueryMiddleware,
+    postInputQueryMiddleware,
     getPostListByBlogIdHandler,
   )
   .get(
