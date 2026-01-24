@@ -14,3 +14,7 @@ export const validationMessages = {
   websiteUrlPattern:
     'websiteUrl должен начинаться с https://, содержать только буквы, цифры, _, - в домене и пути',
 };
+
+export enum EBlogValidationFilter {
+  SEARCH_NAME_TERM = 'searchNameTerm',
+}

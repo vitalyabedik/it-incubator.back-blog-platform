@@ -1,13 +1,14 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { EHttpStatus } from '../../core/constants/http';
 import 'dotenv/config';
+import { TRequestWithQuery } from '../../core/types/request';
 
 export const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 export const AUTH_TYPE = 'Basic';
 
-export const superAdminGuardMiddleware = (
-  req: Request,
+export const superAdminGuardMiddleware = <T>(
+  req: TRequestWithQuery<T>,
   res: Response,
   next: NextFunction,
 ) => {

@@ -1,6 +1,6 @@
-import { TPostOutput } from '../output/post.output';
-
-export type TPostUpdateInput = Omit<
-  TPostOutput,
-  'id' | 'blogName' | 'createdAt'
->;
+export type TPostUpdateInput = {
+  blogId: string;
+  title: string;
+  shortDescription: string;
+  content: string;
+};

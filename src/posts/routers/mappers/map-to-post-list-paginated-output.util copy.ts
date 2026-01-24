@@ -1,9 +1,9 @@
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
-import { TPostRepositoryOutput } from '../../repositories/output/post-repository.output';
+import { TPostQueryRepositoryOutput } from '../../repositories/output/post-query-repository.output';
 import { TPostListPaginatedOutput } from '../output/post-list-paginated.output';
 
 export const mapToPostListPaginatedOutput = (
-  posts: TPostRepositoryOutput[],
+  posts: TPostQueryRepositoryOutput[],
   meta: {
     pagination: TPaginationMeta;
   },

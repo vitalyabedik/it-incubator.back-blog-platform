@@ -14,7 +14,6 @@ import { TBlogUpdateInput } from '../../../src/blogs/routers/input/blog-update.i
 import { getBlogDto } from '../../utils/blogs/get-blog-dto';
 import { createBlog } from '../../utils/blogs/create-blog';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
-import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
 import { setupTestApp } from '../../utils/setup-test-app';
 import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
 import {
@@ -155,7 +154,7 @@ describe('Blog API body validation check', () => {
     };
     const invalidDataSetRequest1 = await request(app)
       .put(`${BLOGS_PATH}/${createdBlog.id}`)
-      .set('Authorization', generateBasicAuthToken())
+      .set('Authorization', authToken)
       .send(invalidDataSet1)
       .expect(EHttpStatus.BAD_REQUEST_400);
 

@@ -1,7 +1,9 @@
 import { TPostOutput } from '../output/post.output';
-import { TPostRepositoryOutput } from '../../repositories/output/post-repository.output';
+import { TPostQueryRepositoryOutput } from '../../repositories/output/post-query-repository.output';
 
-export const mapToPostOutput = (post: TPostRepositoryOutput): TPostOutput => ({
+export const mapToPostOutput = (
+  post: TPostQueryRepositoryOutput,
+): TPostOutput => ({
   id: post._id.toString(),
   blogId: post.blogId,
   blogName: post.blogName,

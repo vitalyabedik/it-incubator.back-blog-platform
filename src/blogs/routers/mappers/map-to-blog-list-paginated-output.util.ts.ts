@@ -1,9 +1,9 @@
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
-import { TBlogRepositoryOutput } from '../../repositories/output/blog-repository.output';
+import { TBlogQueryRepositoryOutput } from '../../repositories/output/blog-query-repository.output';
 import { TBlogListPaginatedOutput } from '../output/blog-list-paginated.output';
 
 export const mapToBlogListPaginatedOutput = (
-  blogs: TBlogRepositoryOutput[],
+  blogs: TBlogQueryRepositoryOutput[],
   meta: {
     pagination: TPaginationMeta;
   },
