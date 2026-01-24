@@ -1,8 +1,8 @@
 import { Filter } from 'mongodb';
-import { TUser } from '../../domain/user';
+import { TUserDB } from '../../domain/userDB';
 import { TUserQueryInput } from '../../routes/input/user-query.input';
 
-type TUserFilter = Filter<TUser> & {
+type TUserFilter = Filter<TUserDB> & {
   login?: {
     $regex: string;
     $options: string;
@@ -15,14 +15,24 @@ type TUserFilter = Filter<TUser> & {
 
 export const createUserFilter = (queryDto: TUserQueryInput): TUserFilter => {
   const { searchLoginTerm, searchEmailTerm } = queryDto;
+
   const filter: TUserFilter = {};
+  const searchFilter: TUserFilter[] = [];
 
   if (searchLoginTerm) {
-    filter.login = { $regex: searchLoginTerm, $options: 'i' };
+    searchFilter.push({
+      login: { $regex: searchLoginTerm, $options: 'i' },
+    });
   }
 
   if (searchEmailTerm) {
-    filter.email = { $regex: searchEmailTerm, $options: 'i' };
+    searchFilter.push({
+      email: { $regex: searchEmailTerm, $options: 'i' },
+    });
+  }
+
+  if (searchFilter.length > 0) {
+    filter.$or = searchFilter;
   }
 
   return filter;
