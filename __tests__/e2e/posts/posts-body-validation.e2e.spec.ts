@@ -4,7 +4,7 @@ import { POSTS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
 import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
 import { TPostUpdateInput } from '../../../src/posts/routers/input/post-update.input';
-import { TPostOutput } from '../../../src/posts/routers/output/post.output';
+import { TPostOutput } from '../../../src/posts/repositories/output/post.output';
 import {
   POST_CONTENT_MAX_FIELD_LENGTH,
   POST_SHORT_DESCRIPTION_MAX_FIELD_LENGTH,

@@ -1,5 +1,5 @@
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
-import { TUserQueryRepositoryOutput } from '../../repositories/output/user-query-repository.output';
+import { TUserQueryRepositoryOutput } from '../output/user-query-repository.output';
 import { TUserListPaginatedOutput } from '../output/user-list-paginated.output';
 
 export const mapToUserListPaginatedOutput = (

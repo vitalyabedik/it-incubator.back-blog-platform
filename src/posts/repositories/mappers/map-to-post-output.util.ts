@@ -1,5 +1,5 @@
 import { TPostOutput } from '../output/post.output';
-import { TPostQueryRepositoryOutput } from '../../repositories/output/post-query-repository.output';
+import { TPostQueryRepositoryOutput } from '../output/post-query-repository.output';
 
 export const mapToPostOutput = (
   post: TPostQueryRepositoryOutput,

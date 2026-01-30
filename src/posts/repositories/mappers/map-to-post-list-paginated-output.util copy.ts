@@ -1,5 +1,5 @@
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
-import { TPostQueryRepositoryOutput } from '../../repositories/output/post-query-repository.output';
+import { TPostQueryRepositoryOutput } from '../output/post-query-repository.output';
 import { TPostListPaginatedOutput } from '../output/post-list-paginated.output';
 
 export const mapToPostListPaginatedOutput = (

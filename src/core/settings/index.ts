@@ -2,8 +2,10 @@ import 'dotenv/config';
 
 export const SETTINGS = {
   PORT: process.env.PORT,
-  MONGO_URL: process.env.MONGO_URL,
-  DB_NAME: process.env.DB_NAME,
-  ADMIN_USERNAME: process.env.ADMIN_USERNAME,
-  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+  MONGO_URL: String(process.env.MONGO_URL),
+  DB_NAME: String(process.env.DB_NAME),
+  ADMIN_USERNAME: String(process.env.ADMIN_USERNAME),
+  ADMIN_PASSWORD: String(process.env.ADMIN_PASSWORD),
+  AC_SECRET: String(process.env.AC_SECRET),
+  AC_TIME: String(process.env.AC_TIME),
 };

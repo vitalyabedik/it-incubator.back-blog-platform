@@ -5,7 +5,6 @@ import { errorsHandler } from '../../../core/errors/errors.handler';
 import { TUserCreateInput } from '../input/user-create.input';
 import { usersService } from '../../application/users.service';
 import { usersQueryRepository } from '../../repositories/users-query.repositories';
-import { mapToUserOutput } from '../mappers/map-to-user-output.util';
 
 export const createUserHandler = async (
   req: TRequestWithBody<TUserCreateInput>,
@@ -24,9 +23,7 @@ export const createUserHandler = async (
     const createdUser =
       await usersQueryRepository.getUserById(createdUserIdOrError);
 
-    const userOutput = mapToUserOutput(createdUser);
-
-    res.status(EHttpStatus.CREATED_201).send(userOutput);
+    res.status(EHttpStatus.CREATED_201).send(createdUser);
   } catch (error: unknown) {
     errorsHandler(error, res);
   }

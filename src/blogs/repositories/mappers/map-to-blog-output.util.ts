@@ -1,4 +1,4 @@
-import { TBlogQueryRepositoryOutput } from '../../repositories/output/blog-query-repository.output';
+import { TBlogQueryRepositoryOutput } from '../output/blog-query-repository.output';
 import { TBlogOutput } from '../output/blog.output';
 
 export const mapToBlogOutput = (

@@ -2,7 +2,7 @@ import request from 'supertest';
 import { Express } from 'express';
 import { POSTS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { TPostOutput } from '../../../src/posts/routers/output/post.output';
+import { TPostOutput } from '../../../src/posts/repositories/output/post.output';
 
 export const getPostById = async (
   app: Express,

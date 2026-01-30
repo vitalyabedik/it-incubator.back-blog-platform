@@ -1,4 +1,4 @@
-import { TUserQueryRepositoryOutput } from '../../repositories/output/user-query-repository.output';
+import { TUserQueryRepositoryOutput } from '../output/user-query-repository.output';
 import { TUserOutput } from '../output/user.output';
 
 export const mapToUserOutput = (

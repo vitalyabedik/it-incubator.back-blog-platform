@@ -2,8 +2,8 @@ import request from 'supertest';
 import { Express } from 'express';
 import { BLOGS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
-import { TPostOutput } from '../../../src/posts/routers/output/post.output';
+import { TBlogOutput } from '../../../src/blogs/repositories/output/blog.output';
+import { TPostOutput } from '../../../src/posts/repositories/output/post.output';
 import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
 import { getPostDto } from '../posts/get-post-dto';
 

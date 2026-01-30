@@ -1,5 +1,5 @@
-import { superAdminGuardMiddleware } from './../../auth/middlewares/super-admin.guard-middleware';
 import { Router } from 'express';
+import { superAdminGuardMiddleware } from './../../auth/middlewares/super-admin.guard-middleware';
 import { paramsIdValidationMiddleware } from '../../core/middlewares/validation/params-id.validation.middleware';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validation-result.middleware';
 import { routersPaths } from '../../core/constants/paths';

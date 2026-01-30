@@ -3,7 +3,7 @@ import { Express } from 'express';
 import { USERS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
 import { TUserCreateInput } from '../../../src/users/routes/input/user-create.input';
-import { TUserOutput } from '../../../src/users/routes/output/user.output';
+import { TUserOutput } from '../../../src/users/repositories/output/user.output';
 import { getUserDto } from './get-user-dto';
 
 type TCreateUserArgs = {
