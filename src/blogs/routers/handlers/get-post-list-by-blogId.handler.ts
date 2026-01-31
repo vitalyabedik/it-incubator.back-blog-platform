@@ -20,7 +20,7 @@ export const getPostListByBlogIdHandler = async (
       includeOptionals: true,
     });
 
-    const blog = blogsQueryRepository.getBlogById(blogId);
+    const blog = await blogsQueryRepository.getBlogById(blogId);
     if (!blog) return res.sendStatus(EHttpStatus.NOT_FOUND_404);
 
     const postList = await postsQueryRepository.getPostListByBlogId(
