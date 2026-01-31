@@ -3,7 +3,7 @@ import { TAPIErrorResult } from '../../core/types/error';
 import { TUserCreateInput } from '../routes/input/user-create.input';
 import { usersRepository } from '../repositories/users.repositories';
 import { checkIsUniqueLoginAndEmail } from '../repositories/validation/user.repositories-unique-loginAndEmail.validation';
-import { mapToDbUser } from '../repositories/mappers/map-to-db-user';
+import { mapToDbUser } from '../repositories/mappers/map-to-db-user.util';
 
 export const usersService = {
   async create(dto: TUserCreateInput): Promise<string | TAPIErrorResult> {

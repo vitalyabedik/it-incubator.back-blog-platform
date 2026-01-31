@@ -13,7 +13,7 @@ export const loginUserHandler = async (
     const accessToken = await authService.loginUser(req.body);
     if (!accessToken) return res.sendStatus(EHttpStatus.UNAUTHORIZED_401);
 
-    res.sendStatus(EHttpStatus.NO_CONTENT_204);
+    res.send(accessToken);
   } catch (error: unknown) {
     errorsHandler(error, res);
   }
