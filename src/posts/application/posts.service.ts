@@ -1,45 +1,29 @@
 import { blogsQueryRepository } from '../../blogs/repositories/blogs-query.repositories';
-import { TPost } from '../domain/post';
+import { mapToDbPost } from '../repositories/mappers/map-to-db-post.util';
 import { postsRepository } from '../repositories/posts.repositories';
 import { TPostCreateInput } from '../routers/input/post-create.input';
 import { TPostUpdateInput } from '../routers/input/post-update.input';
 
 export const postsService = {
   async create(dto: TPostCreateInput): Promise<string> {
-    const { blogId, content, shortDescription, title } = dto;
+    const { blogId } = dto;
 
     const blog = await blogsQueryRepository.getBlogById(blogId);
 
-    const newPost: TPost = {
-      blogName: blog.name,
-      blogId,
-      content,
-      shortDescription,
-      title,
-      createdAt: new Date().toISOString(),
-    };
+    const newDbPost = mapToDbPost({ blogId, blog, dto });
 
-    return postsRepository.create(newPost);
+    return postsRepository.create(newDbPost);
   },
 
   async createPostByBlogId(
     blogId: string,
     dto: TPostCreateInput,
   ): Promise<string> {
-    const { content, shortDescription, title } = dto;
-
     const blog = await blogsQueryRepository.getBlogById(blogId);
 
-    const newPost: TPost = {
-      blogName: blog.name,
-      blogId,
-      content,
-      shortDescription,
-      title,
-      createdAt: new Date().toISOString(),
-    };
+    const newDbPost = mapToDbPost({ blogId, blog, dto });
 
-    const postId = await postsRepository.create(newPost);
+    const postId = await postsRepository.create(newDbPost);
 
     return postId;
   },

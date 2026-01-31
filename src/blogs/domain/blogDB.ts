@@ -1,5 +1,4 @@
-export type TBlogOutput = {
-  id: string;
+export type TBlogDB = {
   name: string;
   description: string;
   websiteUrl: string;

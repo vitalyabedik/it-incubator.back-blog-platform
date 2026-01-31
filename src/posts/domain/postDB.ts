@@ -1,5 +1,4 @@
-export type TPostOutput = {
-  id: string;
+export type TPostDB = {
   title: string;
   shortDescription: string;
   content: string;

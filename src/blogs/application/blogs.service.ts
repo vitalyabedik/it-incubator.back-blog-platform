@@ -1,21 +1,13 @@
 import { blogsRepository } from '../repositories/blogs.repositories';
 import { TBlogCreateInput } from '../routers/input/blog-create.input';
 import { TBlogUpdateInput } from '../routers/input/blog-update.input';
-import { TBlog } from '../domain/blog';
+import { mapToDbBlog } from '../repositories/mappers/map-to-db-blog.util';
 
 export const blogsService = {
   async create(dto: TBlogCreateInput): Promise<string> {
-    const { name, description, websiteUrl } = dto;
+    const newDbBlog = mapToDbBlog(dto);
 
-    const newBlog: TBlog = {
-      name,
-      description,
-      websiteUrl,
-      createdAt: new Date().toISOString(),
-      isMembership: false,
-    };
-
-    return blogsRepository.create(newBlog);
+    return blogsRepository.create(newDbBlog);
   },
 
   async update(id: string, dto: TBlogUpdateInput): Promise<void> {

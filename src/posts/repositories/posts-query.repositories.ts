@@ -39,18 +39,11 @@ export const postsQueryRepository = {
     blogId: string,
     queryDto: TPostQueryInput,
   ): Promise<TPostListPaginatedOutput> {
-    const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
-
+    const { sort, skip, limit } = getPaginationParams(queryDto);
     const filter = { blogId };
-    const skip = (pageNumber - 1) * pageSize;
 
     const [items, totalCount] = await Promise.all([
-      postCollection
-        .find(filter)
-        .sort({ [sortBy]: sortDirection })
-        .skip(skip)
-        .limit(pageSize)
-        .toArray(),
+      postCollection.find(filter).sort(sort).skip(skip).limit(limit).toArray(),
       postCollection.countDocuments(filter),
     ]);
 
