@@ -5,7 +5,7 @@ import { errorsHandler } from '../../../core/errors/errors.handler';
 import { postsService } from '../../../posts/application/posts.service';
 import { TPostCreateInput } from '../../../posts/routers/input/post-create.input';
 import { TCreatePostByBlogIdParams } from './params/create-post-by-blogId-params';
-import { mapToPostOutput } from '../../../posts/routers/mappers/map-to-post-output.util';
+import { postsQueryRepository } from '../../../posts/repositories/posts-query.repositories';
 
 export const createPostByBlogId = async (
   req: TRequestWithParamsAndBody<TCreatePostByBlogIdParams, TPostCreateInput>,
@@ -17,11 +17,9 @@ export const createPostByBlogId = async (
       req.body,
     );
 
-    const createdPost = await postsService.getPostById(postId);
+    const createdPost = await postsQueryRepository.getPostById(postId);
 
-    const blogOutput = mapToPostOutput(createdPost);
-
-    res.status(EHttpStatus.CREATED_201).send(blogOutput);
+    res.status(EHttpStatus.CREATED_201).send(createdPost);
   } catch (error: unknown) {
     errorsHandler(error, res);
   }

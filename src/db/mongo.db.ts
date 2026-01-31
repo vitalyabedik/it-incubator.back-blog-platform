@@ -1,7 +1,8 @@
 import { Collection, Db, MongoClient } from 'mongodb';
 import { TUserDB } from '../users/domain/userDB';
-import { TBlog } from '../blogs/domain/blog';
-import { TPost } from '../posts/domain/post';
+import { TBlogDB } from '../blogs/domain/blogDB';
+import { TPostDB } from '../posts/domain/postDB';
+import { TCommentDB } from '../comments/domain/commentDB';
 import { SETTINGS } from '../core/settings';
 
 const CONNECTED_DB_MESSAGE = 'Connected to the database';
@@ -13,19 +14,22 @@ const DB_PING = 1;
 const USERS_COLLECTION_NAME = 'users';
 const BLOGS_COLLECTION_NAME = 'blogs';
 const POSTS_COLLECTION_NAME = 'posts';
+const COMMENTS_COLLECTION_NAME = 'comments';
 
 export let client: MongoClient;
 export let userCollection: Collection<TUserDB>;
-export let blogCollection: Collection<TBlog>;
-export let postCollection: Collection<TPost>;
+export let blogCollection: Collection<TBlogDB>;
+export let postCollection: Collection<TPostDB>;
+export let commentCollection: Collection<TCommentDB>;
 
 export const runDB = async (url: string): Promise<void> => {
   client = new MongoClient(url);
   const db: Db = client.db(SETTINGS.DB_NAME);
 
   userCollection = db.collection<TUserDB>(USERS_COLLECTION_NAME);
-  blogCollection = db.collection<TBlog>(BLOGS_COLLECTION_NAME);
-  postCollection = db.collection<TPost>(POSTS_COLLECTION_NAME);
+  blogCollection = db.collection<TBlogDB>(BLOGS_COLLECTION_NAME);
+  postCollection = db.collection<TPostDB>(POSTS_COLLECTION_NAME);
+  commentCollection = db.collection<TCommentDB>(COMMENTS_COLLECTION_NAME);
 
   try {
     await client.connect();

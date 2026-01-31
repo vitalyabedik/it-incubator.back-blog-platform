@@ -8,7 +8,7 @@ import {
   BLOG_WEBSITE_URL_MAX_FIELD_LENGTH,
 } from '../../../src/blogs/constants/validation';
 import { stopDB } from '../../../src/db/mongo.db';
-import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
+import { TBlogOutput } from '../../../src/blogs/repositories/output/blog.output';
 import { TBlogCreateInput } from '../../../src/blogs/routers/input/blog-create.input';
 import { TBlogUpdateInput } from '../../../src/blogs/routers/input/blog-update.input';
 import { getBlogDto } from '../../utils/blogs/get-blog-dto';

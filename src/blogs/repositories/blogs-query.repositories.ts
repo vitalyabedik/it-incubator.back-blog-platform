@@ -5,13 +5,15 @@ import { getPaginationParams } from '../../core/utils/getPaginationParams';
 import { errorMessages } from '../constants/texts';
 import { TBlogQueryInput } from '../routers/input/blog-query.input';
 import { createBlogFilter } from './utils/create-blog-filter';
-import { TBlogListQueryRepositoryOutput } from './output/blog-list-query-repository.output';
-import { TBlogQueryRepositoryOutput } from './output/blog-query-repository.output';
+import { TBlogListPaginatedOutput } from './output/blog-list-paginated.output';
+import { TBlogOutput } from './output/blog.output';
+import { mapToBlogListPaginatedOutput } from './mappers/map-to-blog-list-paginated-output.util.ts';
+import { mapToBlogOutput } from './mappers/map-to-blog-output.util';
 
 export const blogsQueryRepository = {
   async getBlogList(
     queryDto: TBlogQueryInput,
-  ): Promise<TBlogListQueryRepositoryOutput> {
+  ): Promise<TBlogListPaginatedOutput> {
     const { sort, skip, limit } = getPaginationParams(queryDto);
     const filter = createBlogFilter(queryDto);
 
@@ -24,16 +26,26 @@ export const blogsQueryRepository = {
 
     const totalCount = await blogCollection.countDocuments(filter);
 
-    return { items, totalCount };
+    const blogListOutput = mapToBlogListPaginatedOutput(items, {
+      pagination: {
+        page: queryDto.pageNumber,
+        pageSize: queryDto.pageSize,
+        totalCount,
+      },
+    });
+
+    return blogListOutput;
   },
 
-  async getBlogById(id: string): Promise<TBlogQueryRepositoryOutput> {
+  async getBlogById(id: string): Promise<TBlogOutput> {
     const res = await blogCollection.findOne({ _id: new ObjectId(id) });
 
     if (!res) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
 
-    return res;
+    const blogOutput = mapToBlogOutput(res);
+
+    return blogOutput;
   },
 };

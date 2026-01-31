@@ -4,7 +4,7 @@ import { BLOGS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
 import { TBlogCreateInput } from '../../../src/blogs/routers/input/blog-create.input';
 import { TBlogUpdateInput } from '../../../src/blogs/routers/input/blog-update.input';
-import { TBlogOutput } from '../../../src/blogs/routers/output/blog.output';
+import { TBlogOutput } from '../../../src/blogs/repositories/output/blog.output';
 import { TPostCreateInput } from '../../../src/posts/routers/input/post-create.input';
 import { stopDB } from '../../../src/db/mongo.db';
 import { getBlogDto } from '../../utils/blogs/get-blog-dto';

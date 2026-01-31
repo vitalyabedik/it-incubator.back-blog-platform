@@ -23,7 +23,7 @@ export const blogsRouter = Router({});
 blogsRouter
   .get(routersPaths.empty, blogInputQueryMiddleware, getBlogListHandler)
   .get(
-    routersPaths.blogs.allPostsByBlogId,
+    routersPaths.blogs.postsByBlogId,
     paramsBlogIdValidationMiddleware,
     postInputQueryMiddleware,
     getPostListByBlogIdHandler,
@@ -42,7 +42,7 @@ blogsRouter
     createBlogHandler,
   )
   .post(
-    routersPaths.blogs.allPostsByBlogId,
+    routersPaths.blogs.postsByBlogId,
     superAdminGuardMiddleware,
     postByBlogIdInputDtoMiddleware,
     inputValidationResultMiddleware,

@@ -15,7 +15,7 @@ export const setupTestApp = async (): Promise<TReturn> => {
   const authToken = generateBasicAuthToken();
 
   setupApp(app);
-  await runDB(SETTINGS.MONGO_URL!);
+  await runDB(SETTINGS.MONGO_URL);
   await clearDb(app);
 
   return { app, authToken };

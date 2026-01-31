@@ -3,11 +3,11 @@ import { blogCollection } from '../../db/mongo.db';
 import { TBlogUpdateInput } from './../routers/input/blog-update.input';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { errorMessages } from '../constants/texts';
-import { TBlog } from '../domain/blog';
+import { TBlogDB } from '../domain/blogDB';
 
 export const blogsRepository = {
-  async create(newBlog: TBlog): Promise<string> {
-    const insertResult = await blogCollection.insertOne(newBlog);
+  async create(newDbBlog: TBlogDB): Promise<string> {
+    const insertResult = await blogCollection.insertOne(newDbBlog);
 
     return insertResult.insertedId.toString();
   },

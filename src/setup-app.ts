@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import {
   AUTH_PATH,
   BLOGS_PATH,
+  COMMENTS_PATH,
   POSTS_PATH,
   routersPaths,
   TESTING_PATH,
@@ -12,6 +13,7 @@ import { authRouter } from './auth/routers/auth.router';
 import { blogsRouter } from './blogs/routers/blogs.router';
 import { postsRouter } from './posts/routers/posts.router';
 import { usersRouter } from './users/routes/users.router';
+import { commentsRouter } from './comments/routers/comments.router';
 import { testingRouter } from './testing/routers/testing.router';
 
 const MAIN_MESSAGE = 'Hello Blog Platform!';
@@ -27,6 +29,7 @@ export const setupApp = (app: Express) => {
   app.use(USERS_PATH, usersRouter);
   app.use(BLOGS_PATH, blogsRouter);
   app.use(POSTS_PATH, postsRouter);
+  app.use(COMMENTS_PATH, commentsRouter);
   app.use(TESTING_PATH, testingRouter);
 
   return app;

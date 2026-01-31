@@ -1,4 +1,4 @@
 import { WithId } from 'mongodb';
-import { TBlog } from '../../domain/blog';
+import { TBlogDB } from '../../domain/blogDB';
 
-export type TBlogQueryRepositoryOutput = WithId<TBlog>;
+export type TBlogQueryRepositoryOutput = WithId<TBlogDB>;

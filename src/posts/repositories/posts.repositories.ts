@@ -1,13 +1,13 @@
 import { ObjectId } from 'mongodb';
-import { TPost } from '../domain/post';
+import { TPostDB } from '../domain/postDB';
 import { TPostUpdateInput } from '../routers/input/post-update.input';
 import { postCollection } from '../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { errorMessages } from '../constants/texts';
 
 export const postsRepository = {
-  async create(newPost: TPost): Promise<string> {
-    const insertResult = await postCollection.insertOne(newPost);
+  async create(newDbPost: TPostDB): Promise<string> {
+    const insertResult = await postCollection.insertOne(newDbPost);
 
     return insertResult.insertedId.toString();
   },
