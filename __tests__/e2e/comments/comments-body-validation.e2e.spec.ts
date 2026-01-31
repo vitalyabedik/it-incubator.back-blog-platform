@@ -17,6 +17,7 @@ import { loginUser } from '../../utils/auth/login-user';
 import { getCommentDto } from '../../utils/comments/get-comment-dto';
 import { createComment } from '../../utils/comments/create-comment';
 import { getCommentById } from '../../utils/comments/get-comment-by-id';
+import { getUserDto } from '../../utils/users/get-user-dto';
 
 describe('Comment API body validation check', () => {
   let app: Express;
@@ -45,7 +46,7 @@ describe('Comment API body validation check', () => {
       authToken,
       userDto: {
         login: 'newuser1',
-        password: 'userpassword1',
+        password: getUserDto().password,
         email: 'newUser1@gmail.com',
       },
     });
@@ -113,7 +114,7 @@ describe('Comment API body validation check', () => {
       authToken,
       userDto: {
         login: 'newuser2',
-        password: 'userpassword2',
+        password: getUserDto().password,
         email: 'newUser2@gmail.com',
       },
     });

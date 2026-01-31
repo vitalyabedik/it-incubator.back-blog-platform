@@ -15,6 +15,7 @@ import { createComment } from '../../utils/comments/create-comment';
 import { createUser } from '../../utils/users/create-user';
 import { TCommentUpdateInput } from '../../../src/comments/routers/input/comment-update.input';
 import { getCommentById } from '../../utils/comments/get-comment-by-id';
+import { getUserDto } from '../../utils/users/get-user-dto';
 import { TCommentOutput } from '../../../src/comments/repositories/output/comment.output';
 
 describe('Comment API', () => {
@@ -41,7 +42,7 @@ describe('Comment API', () => {
       authToken,
       userDto: {
         login: 'newuser1',
-        password: 'userpassword1',
+        password: getUserDto().password,
         email: 'newUser1@gmail.com',
       },
     });
@@ -70,7 +71,7 @@ describe('Comment API', () => {
       authToken,
       userDto: {
         login: 'newuser2',
-        password: 'userpassword2',
+        password: getUserDto().password,
         email: 'newUser2@gmail.com',
       },
     });
@@ -117,7 +118,7 @@ describe('Comment API', () => {
       authToken,
       userDto: {
         login: 'newuser4',
-        password: 'userpassword4',
+        password: getUserDto().password,
         email: 'newUser4@gmail.com',
       },
     });
@@ -166,7 +167,7 @@ describe('Comment API', () => {
       authToken,
       userDto: {
         login: 'newuser3',
-        password: 'userpassword3',
+        password: getUserDto().password,
         email: 'newUser3@gmail.com',
       },
     });

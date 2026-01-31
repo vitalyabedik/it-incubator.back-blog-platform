@@ -8,6 +8,7 @@ import { AUTH_PATH, routersPaths } from '../../../src/core/constants/paths';
 import { TUserMeOutput } from '../../../src/users/repositories/output/user-me.output';
 import { EHttpStatus } from '../../../src/core/constants/http';
 import { jwtService } from '../../../src/auth/adapters/jwt.service';
+import { getUserDto } from '../../utils/users/get-user-dto';
 
 describe('Auth API', () => {
   let app: Express;
@@ -41,7 +42,7 @@ describe('Auth API', () => {
       authToken,
       userDto: {
         login: 'newuser1',
-        password: 'userpassword1',
+        password: getUserDto().password,
         email: 'newUser1@gmail.com',
       },
     });
