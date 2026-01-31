@@ -1,3 +1,3 @@
 export type TCreatePostByBlogIdParams = {
-  blogId: string;
+  id: string;
 };

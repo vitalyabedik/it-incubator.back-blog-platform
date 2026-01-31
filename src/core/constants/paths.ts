@@ -10,16 +10,15 @@ export const routersPaths = {
   empty: '',
   root: '/',
   byId: '/:id',
-  byCommentId: '/:commentId',
   auth: {
     me: '/me',
     login: '/login',
   },
   blogs: {
-    postsByBlogId: '/:blogId/posts',
+    postsByBlogId: '/:id/posts',
   },
   posts: {
-    commentsByPostId: '/:postId/comments',
+    commentsByPostId: '/:id/comments',
   },
   comments: '/comments',
   testing: '/testing',

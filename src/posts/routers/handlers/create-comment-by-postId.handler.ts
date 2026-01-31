@@ -17,7 +17,7 @@ export const createCommentByPostId = async (
   try {
     const commentId = await commentsService.createCommentByPostId({
       userId: req.user?.id || '',
-      postId: req.params.postId,
+      postId: req.params.id,
       dto: req.body,
     });
 

@@ -1,9 +1,6 @@
 import { Router } from 'express';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validation-result.middleware';
-import {
-  paramsBlogIdValidationMiddleware,
-  paramsIdValidationMiddleware,
-} from '../../core/middlewares/validation/params-id.validation.middleware';
+import { paramsIdValidationMiddleware } from '../../core/middlewares/validation/params-id.validation.middleware';
 import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
 import { routersPaths } from '../../core/constants/paths';
 import { blogInputDtoMiddleware } from '../middlewares/blog.input-dto.middleware';
@@ -24,7 +21,7 @@ blogsRouter
   .get(routersPaths.empty, blogInputQueryMiddleware, getBlogListHandler)
   .get(
     routersPaths.blogs.postsByBlogId,
-    paramsBlogIdValidationMiddleware,
+    paramsIdValidationMiddleware,
     postInputQueryMiddleware,
     getPostListByBlogIdHandler,
   )

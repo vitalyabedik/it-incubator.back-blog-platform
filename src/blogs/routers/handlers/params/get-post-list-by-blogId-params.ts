@@ -1,3 +1,3 @@
 export type TGetPostListByBlogIdParams = {
-  blogId: string;
+  id: string;
 };

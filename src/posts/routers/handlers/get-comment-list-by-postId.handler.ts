@@ -20,7 +20,7 @@ export const getCommentListByPostIdHandler = async (
     });
 
     const commentList = await commentsQueryRepository.getCommentListByPostId(
-      req.params.postId,
+      req.params.id,
       query,
     );
 

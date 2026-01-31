@@ -13,7 +13,7 @@ export const getPostListByBlogIdHandler = async (
   res: Response,
 ) => {
   try {
-    const blogId = req.params.blogId;
+    const blogId = req.params.id;
 
     const query = matchedData<TPostQueryInput>(req, {
       locations: ['query'],

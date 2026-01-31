@@ -3,10 +3,7 @@ import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.gu
 import { accessTokenMiddleware } from '../../auth/middlewares/access-token.guard-middleware';
 import { commentInputQueryMiddleware } from '../../comments/middlewares/comment.input-query.middleware';
 import { commentInputDtoMiddleware } from '../../comments/middlewares/comment.input-dto.middleware';
-import {
-  paramsIdValidationMiddleware,
-  paramsPostIdValidationMiddleware,
-} from '../../core/middlewares/validation/params-id.validation.middleware';
+import { paramsIdValidationMiddleware } from '../../core/middlewares/validation/params-id.validation.middleware';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validation-result.middleware';
 import { routersPaths } from '../../core/constants/paths';
 import { postInputDtoMiddleware } from '../middlewares/post.input-dto.middleware';
@@ -25,7 +22,7 @@ postsRouter
   .get(routersPaths.empty, postInputQueryMiddleware, getPostListHandler)
   .get(
     routersPaths.posts.commentsByPostId,
-    paramsPostIdValidationMiddleware,
+    paramsIdValidationMiddleware,
     commentInputQueryMiddleware,
     getCommentListByPostIdHandler,
   )

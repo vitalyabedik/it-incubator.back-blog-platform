@@ -1,3 +1,3 @@
 export type TCreateCommentByPostIdParams = {
-  postId: string;
+  id: string;
 };

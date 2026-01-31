@@ -1,3 +1,3 @@
 export type TDeleteCommentParams = {
-  commentId: string;
+  id: string;
 };

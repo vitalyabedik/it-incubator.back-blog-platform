@@ -13,7 +13,7 @@ export const createPostByBlogId = async (
 ) => {
   try {
     const postId = await postsService.createPostByBlogId(
-      req.params.blogId,
+      req.params.id,
       req.body,
     );
 

@@ -1,9 +1,6 @@
 import { Router } from 'express';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validation-result.middleware';
-import {
-  paramsCommentIdValidationMiddleware,
-  paramsIdValidationMiddleware,
-} from '../../core/middlewares/validation/params-id.validation.middleware';
+import { paramsIdValidationMiddleware } from '../../core/middlewares/validation/params-id.validation.middleware';
 import { accessTokenMiddleware } from '../../auth/middlewares/access-token.guard-middleware';
 import { routersPaths } from '../../core/constants/paths';
 import { commentInputDtoMiddleware } from '../middlewares/comment.input-dto.middleware';
@@ -21,17 +18,17 @@ commentsRouter
     getCommentHandler,
   )
   .put(
-    routersPaths.byCommentId,
+    routersPaths.byId,
     accessTokenMiddleware,
-    paramsCommentIdValidationMiddleware,
+    paramsIdValidationMiddleware,
     commentInputDtoMiddleware,
     inputValidationResultMiddleware,
     updateCommentHandler,
   )
   .delete(
-    routersPaths.byCommentId,
+    routersPaths.byId,
     accessTokenMiddleware,
-    paramsCommentIdValidationMiddleware,
+    paramsIdValidationMiddleware,
     inputValidationResultMiddleware,
     deleteCommentHandler,
   );

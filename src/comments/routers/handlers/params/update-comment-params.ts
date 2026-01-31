@@ -1,3 +1,3 @@
 export type TUpdateCommentParams = {
-  commentId: string;
+  id: string;
 };
