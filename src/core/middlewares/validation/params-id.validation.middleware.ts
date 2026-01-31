@@ -1,19 +1,47 @@
-import { param } from 'express-validator';
 import { EValidationParams } from '../../constants/validation';
 import { paramsErrorMessages } from '../../constants/texts';
+import { baseParamValidation } from '../../utils/params-validation';
 
-export const paramsIdValidationMiddleware = param(EValidationParams.ID)
-  .exists()
-  .withMessage(paramsErrorMessages.idRequired)
-  .isString()
-  .withMessage(paramsErrorMessages.idStringType)
-  .isMongoId()
-  .withMessage(paramsErrorMessages.idObjectIdType);
+export const paramsIdValidationMiddleware = baseParamValidation({
+  parameter: EValidationParams.ID,
+  options: {
+    texts: {
+      requiredMessage: paramsErrorMessages.idRequired,
+      stringTypeMessage: paramsErrorMessages.idStringType,
+      objectIdTypeMessage: paramsErrorMessages.idObjectIdType,
+    },
+  },
+});
 
-export const paramsBlogIdValidationMiddleware = param(EValidationParams.BLOG_ID)
-  .exists()
-  .withMessage(paramsErrorMessages.blogIdRequired)
-  .isString()
-  .withMessage(paramsErrorMessages.blogIdStringType)
-  .isMongoId()
-  .withMessage(paramsErrorMessages.blogIdObjectIdType);
+export const paramsBlogIdValidationMiddleware = baseParamValidation({
+  parameter: EValidationParams.BLOG_ID,
+  options: {
+    texts: {
+      requiredMessage: paramsErrorMessages.blogIdRequired,
+      stringTypeMessage: paramsErrorMessages.blogIdStringType,
+      objectIdTypeMessage: paramsErrorMessages.blogIdObjectIdType,
+    },
+  },
+});
+
+export const paramsPostIdValidationMiddleware = baseParamValidation({
+  parameter: EValidationParams.POST_ID,
+  options: {
+    texts: {
+      requiredMessage: paramsErrorMessages.postIdRequired,
+      stringTypeMessage: paramsErrorMessages.postIdStringType,
+      objectIdTypeMessage: paramsErrorMessages.postIdObjectIdType,
+    },
+  },
+});
+
+export const paramsCommentIdValidationMiddleware = baseParamValidation({
+  parameter: EValidationParams.COMMENT_ID,
+  options: {
+    texts: {
+      requiredMessage: paramsErrorMessages.commentIdRequired,
+      stringTypeMessage: paramsErrorMessages.commentIdStringType,
+      objectIdTypeMessage: paramsErrorMessages.commentIdObjectIdType,
+    },
+  },
+});

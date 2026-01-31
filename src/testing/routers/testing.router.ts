@@ -1,8 +1,9 @@
 import { Router, Request, Response } from 'express';
 import {
+  userCollection,
   blogCollection,
   postCollection,
-  userCollection,
+  commentCollection,
 } from '../../db/mongo.db';
 import { EHttpStatus } from '../../core/constants/http';
 import { routersPaths } from '../../core/constants/paths';
@@ -16,6 +17,7 @@ testingRouter.delete(
       userCollection.deleteMany(),
       blogCollection.deleteMany(),
       postCollection.deleteMany(),
+      commentCollection.deleteMany(),
     ]);
 
     res.sendStatus(EHttpStatus.NO_CONTENT_204);

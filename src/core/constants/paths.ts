@@ -10,6 +10,7 @@ export const routersPaths = {
   empty: '',
   root: '/',
   byId: '/:id',
+  byCommentId: '/:commentId',
   auth: {
     me: '/me',
     login: '/login',
