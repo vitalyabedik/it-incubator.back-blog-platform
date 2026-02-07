@@ -44,7 +44,7 @@ export const authService = {
         data: null,
         extensions: [
           {
-            field: EAuthValidationField.LOGIN_OR_EMAIL,
+            field: EAuthValidationField.LOGIN,
             message: errorMessages.uniqueUser,
           },
         ],
@@ -58,7 +58,7 @@ export const authService = {
         data: null,
         extensions: [
           {
-            field: EAuthValidationField.LOGIN_OR_EMAIL,
+            field: EAuthValidationField.EMAIL,
             message: errorMessages.uniqueUser,
           },
         ],
@@ -201,6 +201,12 @@ export const authService = {
         errorMessage: errorMessages.updateIsConfirmedInEmailResending,
       };
     }
+
+    nodemailerService.sendEmail({
+      email: userDbByEmail.email,
+      code: userDbByEmail.emailConfirmation?.confirmationCode,
+      template: emailExamples.registrationConfirmationEmail,
+    });
 
     return {
       status: EResultStatus.Success,

@@ -1,14 +1,14 @@
 export const emailExamples = {
   registrationEmail(code: string) {
-    return `<h1>Thank for your registration</h1>
-        <p>To finish registration please follow the link below:
-            <a href='https://somesite.com/confirm-email?code=${code}'>complete registration</a>
-        </p>`;
+    return `<div>
+              <h1>Please confirm your email</h1>
+              <a href='https://somesite.com/confirm-email?code=${code}'>complete registration</a>
+            </div>`;
   },
   registrationConfirmationEmail(code: string) {
-    return `<h1>New confirmation code</h1>
-        <p>To finish confirmation email please follow the link below:
-            <a href='https://somesite.com/confirm-registration?code=${code}'>complete confirmation</a>
-        </p>`;
+    return `<div>
+              <h1>This is new confirmation code</h1>
+              <a href='https://some-front.com/confirm-registration?code=${code}'>complete registration</a>
+            </div>`;
   },
 };
