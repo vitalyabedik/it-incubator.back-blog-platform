@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+import { add } from 'date-fns/add';
 import { bcryptService } from '../../auth/adapters/bcrypt.service';
 import { TAPIErrorResult } from '../../core/types/error';
 import { TUserCreateInput } from '../routes/input/user-create.input';
@@ -14,7 +16,17 @@ export const usersService = {
 
     const passwordHash = await bcryptService.generateHash(password);
 
-    const newDbUser = mapToDbUser(dto, passwordHash);
+    const newDbUser = mapToDbUser({
+      userDto: dto,
+      extraDBFields: {
+        passwordHash,
+        emailConfirmation: {
+          isConfirmed: true,
+          confirmationCode: randomUUID(),
+          expirationDate: add(new Date(), { hours: 1 }).toISOString(),
+        },
+      },
+    });
 
     return usersRepository.create(newDbUser);
   },

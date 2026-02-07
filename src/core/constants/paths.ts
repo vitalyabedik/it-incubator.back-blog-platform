@@ -13,6 +13,9 @@ export const routersPaths = {
   auth: {
     me: '/me',
     login: '/login',
+    registration: '/registration',
+    registrationConfirmation: '/registration-confirmation',
+    registrationEmailResending: '/registration-email-resending',
   },
   blogs: {
     postsByBlogId: '/:id/posts',

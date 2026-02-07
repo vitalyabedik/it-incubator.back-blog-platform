@@ -12,6 +12,15 @@ export const usersRepository = {
     return insertResult.insertedId.toString();
   },
 
+  async update(id: string, updatedUser: TUserDB): Promise<boolean> {
+    const { modifiedCount } = await userCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updatedUser },
+    );
+
+    return modifiedCount > 0;
+  },
+
   async delete(id: string): Promise<void> {
     const { deletedCount } = await userCollection.deleteOne({
       _id: new ObjectId(id),
@@ -24,11 +33,19 @@ export const usersRepository = {
     return;
   },
 
-  async findByLoginOrEmail(
+  async findUserByLoginOrEmail(
     loginOrEmail: string,
   ): Promise<TUserRepositoryOutput | null> {
     return await userCollection.findOne({
       $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
+    });
+  },
+
+  async findUserByConfirmationCode(
+    code: string,
+  ): Promise<TUserRepositoryOutput | null> {
+    return await userCollection.findOne({
+      'emailConfirmation.confirmationCode': code,
     });
   },
 };
