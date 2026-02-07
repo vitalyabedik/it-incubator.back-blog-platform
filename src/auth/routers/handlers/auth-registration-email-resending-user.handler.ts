@@ -18,5 +18,5 @@ export const registrationEmailResendingUserHandler = async (
       .send({ errorsMessages: result.extensions });
   }
 
-  res.sendStatus(EHttpStatus.CREATED_201);
+  res.sendStatus(EHttpStatus.NO_CONTENT_204);
 };

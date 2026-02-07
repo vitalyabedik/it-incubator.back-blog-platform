@@ -44,7 +44,7 @@ export const authService = {
         data: null,
         extensions: [
           {
-            field: EAuthValidationField.LOGIN_OR_EMAIL,
+            field: EAuthValidationField.LOGIN,
             message: errorMessages.uniqueUser,
           },
         ],
@@ -58,7 +58,7 @@ export const authService = {
         data: null,
         extensions: [
           {
-            field: EAuthValidationField.LOGIN_OR_EMAIL,
+            field: EAuthValidationField.EMAIL,
             message: errorMessages.uniqueUser,
           },
         ],
