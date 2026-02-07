@@ -8,7 +8,7 @@ export const checkIsUniqueLoginAndEmail = async (
   login: string,
   email: string,
 ): Promise<TAPIErrorResult | boolean> => {
-  const dbLoginOrNull = await usersRepository.findByLoginOrEmail(login);
+  const dbLoginOrNull = await usersRepository.findUserByLoginOrEmail(login);
   if (dbLoginOrNull)
     return createErrorMessages([
       {
@@ -17,7 +17,7 @@ export const checkIsUniqueLoginAndEmail = async (
       },
     ]);
 
-  const dbEmailOrNull = await usersRepository.findByLoginOrEmail(email);
+  const dbEmailOrNull = await usersRepository.findUserByLoginOrEmail(email);
   if (dbEmailOrNull)
     return createErrorMessages([
       {

@@ -8,6 +8,9 @@ dependencies:
   bcrypt:
     specifier: ^6.0.0
     version: 6.0.0
+  date-fns:
+    specifier: ^4.1.0
+    version: 4.1.0
   dotenv:
     specifier: ^17.2.3
     version: 17.2.3
@@ -23,6 +26,9 @@ dependencies:
   mongodb:
     specifier: ^7.0.0
     version: 7.0.0
+  nodemailer:
+    specifier: ^8.0.0
+    version: 8.0.0
 
 devDependencies:
   '@types/bcrypt':
@@ -40,6 +46,9 @@ devDependencies:
   '@types/node':
     specifier: ^25.0.3
     version: 25.0.3
+  '@types/nodemailer':
+    specifier: ^7.0.9
+    version: 7.0.9
   '@types/supertest':
     specifier: ^6.0.3
     version: 6.0.3
@@ -1010,6 +1019,12 @@ packages:
       undici-types: 7.16.0
     dev: true
 
+  /@types/nodemailer@7.0.9:
+    resolution: {integrity: sha512-vI8oF1M+8JvQhsId0Pc38BdUP2evenIIys7c7p+9OZXSPOH5c1dyINP1jT8xQ2xPuBUXmIC87s+91IZMDjH8Ow==}
+    dependencies:
+      '@types/node': 25.0.3
+    dev: true
+
   /@types/qs@6.14.0:
     resolution: {integrity: sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==}
     dev: true
@@ -1784,6 +1799,10 @@ packages:
       shebang-command: 2.0.0
       which: 2.0.2
     dev: true
+
+  /date-fns@4.1.0:
+    resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
+    dev: false
 
   /debug@4.4.3(supports-color@5.5.0):
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -3380,6 +3399,11 @@ packages:
   /node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
     dev: true
+
+  /nodemailer@8.0.0:
+    resolution: {integrity: sha512-xvVJf/f0bzmNpnRIbhCp/IKxaHgJ6QynvUbLXzzMRPG3LDQr5oXkYuw4uDFyFYs8cge8agwwrJAXZsd4hhMquw==}
+    engines: {node: '>=6.0.0'}
+    dev: false
 
   /nodemon@3.1.11:
     resolution: {integrity: sha512-is96t8F/1//UHAjNPHpbsNY46ELPpftGUoSVNXwUfMk/qdjSylYrWSu1XavVTBOn526kFiOR733ATgNBCQyH0g==}
