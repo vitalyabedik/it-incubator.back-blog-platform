@@ -203,8 +203,8 @@ export const authService = {
     }
 
     nodemailerService.sendEmail({
-      email: userDbByEmail.email,
-      code: userDbByEmail.emailConfirmation?.confirmationCode,
+      email: newUserDB.email,
+      code: newUserDB.emailConfirmation?.confirmationCode,
       template: emailExamples.registrationConfirmationEmail,
     });
 
