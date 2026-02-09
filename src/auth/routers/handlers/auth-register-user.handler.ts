@@ -1,6 +1,5 @@
 import { Response } from 'express';
 import { TRequestWithBody } from '../../../core/types/request';
-import { EHttpStatus } from '../../../core/constants/http';
 import { authService } from '../../application/auth.service';
 import { TUserCreateInput } from '../../../users/routes/input/user-create.input';
 import { EResultStatus } from '../../../core/constants/resultCode';
@@ -18,5 +17,5 @@ export const registrationUserHandler = async (
       .send({ errorsMessages: result.extensions });
   }
 
-  res.sendStatus(EHttpStatus.NO_CONTENT_204);
+  res.sendStatus(resultCodeToHttpException(result.status));
 };

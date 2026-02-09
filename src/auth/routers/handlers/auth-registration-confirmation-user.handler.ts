@@ -1,5 +1,4 @@
 import { Response } from 'express';
-import { EHttpStatus } from '../../../core/constants/http';
 import { EResultStatus } from '../../../core/constants/resultCode';
 import { TRequestWithBody } from '../../../core/types/request';
 import { resultCodeToHttpException } from '../../../core/utils/resultCodeToHttpException';
@@ -18,5 +17,5 @@ export const registrationConfirmationUserHandler = async (
       .send({ errorsMessages: result.extensions });
   }
 
-  res.sendStatus(EHttpStatus.NO_CONTENT_204);
+  res.sendStatus(resultCodeToHttpException(result.status));
 };
