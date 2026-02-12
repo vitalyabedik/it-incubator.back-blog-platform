@@ -33,6 +33,10 @@ export const usersRepository = {
     return;
   },
 
+  async findUserById(id: string): Promise<TUserRepositoryOutput | null> {
+    return await userCollection.findOne({ _id: new ObjectId(id) });
+  },
+
   async findUserByLoginOrEmail(
     loginOrEmail: string,
   ): Promise<TUserRepositoryOutput | null> {

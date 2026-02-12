@@ -4,6 +4,7 @@ import { TRequestWithBody } from '../../../core/types/request';
 import { resultCodeToHttpException } from '../../../core/utils/resultCodeToHttpException';
 import { authService } from '../../application/auth.service';
 import { TAuthRegistrationConfirmationInput } from '../input/auth-registration-confirmation-user.input';
+import { EHttpStatus } from '../../../core/constants/http';
 
 export const registrationConfirmationUserHandler = async (
   req: TRequestWithBody<TAuthRegistrationConfirmationInput>,
@@ -17,5 +18,5 @@ export const registrationConfirmationUserHandler = async (
       .send({ errorsMessages: result.extensions });
   }
 
-  res.sendStatus(resultCodeToHttpException(result.status));
+  res.sendStatus(EHttpStatus.NO_CONTENT_204);
 };

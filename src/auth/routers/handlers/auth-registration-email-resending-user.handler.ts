@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { EResultStatus } from '../../../core/constants/resultCode';
 import { TRequestWithBody } from '../../../core/types/request';
+import { EHttpStatus } from '../../../core/constants/http';
 import { resultCodeToHttpException } from '../../../core/utils/resultCodeToHttpException';
 import { authService } from '../../application/auth.service';
 import { TAuthRegistrationEmailResendingInput } from '../input/auth-registration-email-resending-user.input';
@@ -17,5 +18,5 @@ export const registrationEmailResendingUserHandler = async (
       .send({ errorsMessages: result.extensions });
   }
 
-  res.sendStatus(resultCodeToHttpException(result.status));
+  res.sendStatus(EHttpStatus.NO_CONTENT_204);
 };

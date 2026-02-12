@@ -5,12 +5,15 @@ import { userInputDtoMiddleware } from '../../users/middlewares/user.input-dto.m
 import { accessTokenMiddleware } from '../middlewares/access-token.guard-middleware';
 import { authLoginInputDtoMiddleware } from '../middlewares/auth-login.input-dto.middleware';
 import { authRegistrationConfirmationMiddleware } from '../middlewares/auth-registration-confirmation-user.middleware';
+import { refreshTokenMiddleware } from '../middlewares/refresh-token.guard-middleware';
 import { authRegistrationEmailResendingMiddleware } from '../middlewares/auth-registration-email-resending-user.middleware';
 import { loginUserHandler } from './handlers/auth-login-user.handler';
 import { getMeUserHandler } from './handlers/auth-get-me-user.handler';
 import { registrationUserHandler } from './handlers/auth-register-user.handler';
 import { registrationConfirmationUserHandler } from './handlers/auth-registration-confirmation-user.handler';
 import { registrationEmailResendingUserHandler } from './handlers/auth-registration-email-resending-user.handler';
+import { logoutUserHandler } from './handlers/auth-logout-user.handler';
+import { refreshTokenHandler } from './handlers/auth-refresh-token.handler';
 
 export const authRouter = Router({});
 
@@ -26,6 +29,18 @@ authRouter
     authLoginInputDtoMiddleware,
     inputValidationResultMiddleware,
     loginUserHandler,
+  )
+  .post(
+    routersPaths.auth.logout,
+    refreshTokenMiddleware,
+    inputValidationResultMiddleware,
+    logoutUserHandler,
+  )
+  .post(
+    routersPaths.auth.refreshToken,
+    refreshTokenMiddleware,
+    inputValidationResultMiddleware,
+    refreshTokenHandler,
   )
   .post(
     routersPaths.auth.registration,

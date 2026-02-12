@@ -16,7 +16,7 @@ export const accessTokenMiddleware = async (
   if (authType !== 'Bearer')
     return res.sendStatus(EHttpStatus.UNAUTHORIZED_401);
 
-  const payload = await jwtService.verifyToken(token);
+  const payload = await jwtService.verifyAccessToken(token);
   if (!payload) return res.sendStatus(EHttpStatus.UNAUTHORIZED_401);
 
   const { userId } = payload;
