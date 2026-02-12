@@ -3,13 +3,15 @@ import { TRequestWithBody } from '../../../core/types/request';
 import { EResultStatus } from '../../../core/constants/resultCode';
 import { resultCodeToHttpException } from '../../../core/utils/resultCodeToHttpException';
 import { authService } from '../../application/auth.service';
-import { TAuthLoginInput } from '../input/auth-login.input';
+import { TAuthRefreshTokenInput } from '../input/auth-refresh-token.input';
 
-export const loginUserHandler = async (
-  req: TRequestWithBody<TAuthLoginInput>,
+export const refreshTokenHandler = async (
+  req: TRequestWithBody<TAuthRefreshTokenInput>,
   res: Response,
 ) => {
-  const result = await authService.loginUser(req.body);
+  const refreshToken = String(req.cookies.refreshToken);
+
+  const result = await authService.refreshToken({ refreshToken });
 
   if (result.status !== EResultStatus.Success) {
     return res.sendStatus(resultCodeToHttpException(result.status));

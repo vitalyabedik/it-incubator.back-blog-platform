@@ -1,4 +1,5 @@
 import express, { Express } from 'express';
+import cookieParser from 'cookie-parser';
 import {
   AUTH_PATH,
   BLOGS_PATH,
@@ -20,6 +21,7 @@ const MAIN_MESSAGE = 'Hello Blog Platform!';
 
 export const setupApp = (app: Express) => {
   app.use(express.json());
+  app.use(cookieParser());
 
   app.get(routersPaths.root, (_, res) => {
     res.status(EHttpStatus.OK_200).send(MAIN_MESSAGE);

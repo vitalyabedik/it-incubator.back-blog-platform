@@ -8,6 +8,8 @@ export const SETTINGS = {
   ADMIN_PASSWORD: String(process.env.ADMIN_PASSWORD),
   AC_SECRET: String(process.env.AC_SECRET),
   AC_TIME: String(process.env.AC_TIME),
+  RT_SECRET: String(process.env.RT_SECRET),
+  RT_TIME: String(process.env.RT_TIME),
   EMAIL: String(process.env.EMAIL),
   EMAIL_PASS: String(process.env.EMAIL_PASS),
 };

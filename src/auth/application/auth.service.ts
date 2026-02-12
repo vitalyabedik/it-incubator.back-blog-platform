@@ -16,19 +16,117 @@ import { errorMessages, errorMessageVariant } from '../constants/texts';
 import { mapToDbUser } from '../../users/repositories/mappers/map-to-db-user.util';
 import { TUserCreateInput } from '../../users/routes/input/user-create.input';
 import { TUserDB } from '../../users/domain/userDB';
+import { TAuthLogoutInput } from '../routers/input/auth-logout.input';
+import { authRepository } from '../repositories/auth.repositories';
+import { TAuthRefreshTokenInput } from '../routers/input/auth-refresh-token.input';
+import { TAuthServiceTokensOutput } from './output/auth-service-tokens.output';
 
 export const authService = {
   async loginUser(
     loginDto: TAuthLoginInput,
-  ): Promise<{ accessToken: string } | null> {
+  ): Promise<TResult<TAuthServiceTokensOutput | null>> {
     const user = await this._checkUserCredentials(loginDto);
-    if (!user) return null;
+    if (!user) {
+      return {
+        status: EResultStatus.Unauthorized,
+        errorMessage: errorMessageVariant.credentials,
+        data: null,
+        extensions: [
+          {
+            field: EAuthValidationField.CREDENTIALS,
+            message: errorMessageVariant.credentials,
+          },
+        ],
+      };
+    }
 
-    const accessToken = await jwtService.createToken({
+    const accessToken = await jwtService.createAccessToken({
+      userId: user._id.toString(),
+    });
+    const refreshToken = await jwtService.createRefreshToken({
       userId: user._id.toString(),
     });
 
-    return { accessToken };
+    return {
+      status: EResultStatus.Success,
+      data: { accessToken, refreshToken },
+      extensions: [],
+    };
+  },
+
+  async logoutUser(logoutDto: TAuthLogoutInput): Promise<TResult<null>> {
+    const { refreshToken } = logoutDto;
+
+    await authRepository.addRevokedRefreshToken(refreshToken);
+
+    return {
+      status: EResultStatus.Success,
+      data: null,
+      extensions: [],
+    };
+  },
+
+  async refreshToken(
+    refreshTokenDto: TAuthRefreshTokenInput,
+  ): Promise<TResult<TAuthServiceTokensOutput | null>> {
+    const { refreshToken: existRefreshToken } = refreshTokenDto;
+
+    const verifiedRefreshToken =
+      await jwtService.verifyRefreshToken(existRefreshToken);
+    if (!verifiedRefreshToken) {
+      return {
+        status: EResultStatus.Unauthorized,
+        errorMessage: errorMessageVariant.credentials,
+        data: null,
+        extensions: [],
+      };
+    }
+
+    const revokedToken =
+      await authRepository.getRevokedRefreshToken(existRefreshToken);
+    if (revokedToken) {
+      return {
+        status: EResultStatus.Unauthorized,
+        errorMessage: 'Refresh token revoked',
+        data: null,
+        extensions: [],
+      };
+    }
+
+    await authRepository.addRevokedRefreshToken(existRefreshToken);
+
+    const user = await usersRepository.findUserById(
+      verifiedRefreshToken.userId,
+    );
+    if (!user) {
+      return {
+        status: EResultStatus.Unauthorized,
+        errorMessage: errorMessageVariant.credentials,
+        data: null,
+        extensions: [
+          {
+            field: EAuthValidationField.CREDENTIALS,
+            message: errorMessageVariant.credentials,
+          },
+        ],
+      };
+    }
+
+    const newAccessToken = await jwtService.createAccessToken({
+      userId: user._id.toString(),
+    });
+    const newRefreshToken = await jwtService.createRefreshToken({
+      userId: user._id.toString(),
+    });
+
+    return {
+      status: EResultStatus.Success,
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      },
+      extensions: [],
+    };
   },
 
   async registerUser(
