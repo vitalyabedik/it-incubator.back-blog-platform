@@ -14,7 +14,7 @@ export const registrationUserHandler = async (
 
   if (result.status !== EResultStatus.Success) {
     return res
-      .status(resultCodeToHttpException(result.status))
+      .sendStatus(resultCodeToHttpException(result.status))
       .send({ errorsMessages: result.extensions });
   }
 

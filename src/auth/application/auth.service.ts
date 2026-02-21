@@ -16,15 +16,19 @@ import { errorMessages, errorMessageVariant } from '../constants/texts';
 import { mapToDbUser } from '../../users/repositories/mappers/map-to-db-user.util';
 import { TUserCreateInput } from '../../users/routes/input/user-create.input';
 import { TUserDB } from '../../users/domain/userDB';
-import { TAuthLogoutInput } from '../routers/input/auth-logout.input';
-import { authRepository } from '../repositories/auth.repositories';
+import { userDeviceSessionService } from '../../securityDevices/application/user-device-session.service';
 import { TAuthRefreshTokenInput } from '../routers/input/auth-refresh-token.input';
+import { TAuthServiceLoginInput } from './input/auth-service-login.input';
 import { TAuthServiceTokensOutput } from './output/auth-service-tokens.output';
 
 export const authService = {
-  async loginUser(
-    loginDto: TAuthLoginInput,
-  ): Promise<TResult<TAuthServiceTokensOutput | null>> {
+  async loginUser({
+    deviceName,
+    ip,
+    loginDto,
+  }: TAuthServiceLoginInput): Promise<
+    TResult<TAuthServiceTokensOutput | null>
+  > {
     const user = await this._checkUserCredentials(loginDto);
     if (!user) {
       return {
@@ -40,11 +44,23 @@ export const authService = {
       };
     }
 
+    const userId = user._id.toString();
+    const deviceId = randomUUID();
+
     const accessToken = await jwtService.createAccessToken({
-      userId: user._id.toString(),
+      userId,
     });
     const refreshToken = await jwtService.createRefreshToken({
-      userId: user._id.toString(),
+      userId,
+      deviceId,
+    });
+
+    await userDeviceSessionService.saveUserSession({
+      userId,
+      refreshToken,
+      deviceId,
+      ip,
+      deviceName,
     });
 
     return {
@@ -54,26 +70,15 @@ export const authService = {
     };
   },
 
-  async logoutUser(logoutDto: TAuthLogoutInput): Promise<TResult<null>> {
-    const { refreshToken } = logoutDto;
-
-    await authRepository.addRevokedRefreshToken(refreshToken);
-
-    return {
-      status: EResultStatus.Success,
-      data: null,
-      extensions: [],
-    };
-  },
-
-  async refreshToken(
-    refreshTokenDto: TAuthRefreshTokenInput,
-  ): Promise<TResult<TAuthServiceTokensOutput | null>> {
-    const { refreshToken: existRefreshToken } = refreshTokenDto;
-
-    const verifiedRefreshToken =
-      await jwtService.verifyRefreshToken(existRefreshToken);
-    if (!verifiedRefreshToken) {
+  async refreshToken({
+    ip,
+    refreshToken,
+  }: TAuthRefreshTokenInput): Promise<
+    TResult<TAuthServiceTokensOutput | null>
+  > {
+    const decodedRefreshToken =
+      await jwtService.decodeRefreshToken(refreshToken);
+    if (!decodedRefreshToken) {
       return {
         status: EResultStatus.Unauthorized,
         errorMessage: errorMessageVariant.credentials,
@@ -82,22 +87,7 @@ export const authService = {
       };
     }
 
-    const revokedToken =
-      await authRepository.getRevokedRefreshToken(existRefreshToken);
-    if (revokedToken) {
-      return {
-        status: EResultStatus.Unauthorized,
-        errorMessage: 'Refresh token revoked',
-        data: null,
-        extensions: [],
-      };
-    }
-
-    await authRepository.addRevokedRefreshToken(existRefreshToken);
-
-    const user = await usersRepository.findUserById(
-      verifiedRefreshToken.userId,
-    );
+    const user = await usersRepository.findUserById(decodedRefreshToken.userId);
     if (!user) {
       return {
         status: EResultStatus.Unauthorized,
@@ -112,12 +102,35 @@ export const authService = {
       };
     }
 
+    const userId = user._id.toString();
+    const deviceId = decodedRefreshToken.deviceId;
+    const prevIat = decodedRefreshToken.iat;
+
     const newAccessToken = await jwtService.createAccessToken({
-      userId: user._id.toString(),
+      userId,
     });
     const newRefreshToken = await jwtService.createRefreshToken({
-      userId: user._id.toString(),
+      userId,
+      deviceId,
     });
+
+    const isUpdated = await userDeviceSessionService.updateUserSession({
+      prevIat,
+      ip,
+      refreshToken: newRefreshToken,
+    });
+    if (!isUpdated)
+      return {
+        status: EResultStatus.Unauthorized,
+        errorMessage: errorMessageVariant.refreshToken,
+        data: null,
+        extensions: [
+          {
+            field: EAuthValidationField.REFRESH_TOKEN,
+            message: errorMessageVariant.refreshToken,
+          },
+        ],
+      };
 
     return {
       status: EResultStatus.Success,

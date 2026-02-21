@@ -1,5 +1,6 @@
 export const errorMessageVariant = {
   credentials: 'Ошибка при вводе данных пользователя',
+  refreshToken: 'Некорректный refreshToken',
 };
 
 export const errorMessages = {

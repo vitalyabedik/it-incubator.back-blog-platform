@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validation-result.middleware';
 import { routersPaths } from '../../core/constants/paths';
 import { userInputDtoMiddleware } from '../../users/middlewares/user.input-dto.middleware';
+import { getRateLimitMiddleware } from '../../logs/middlewares/rate-limit.middleware';
 import { accessTokenMiddleware } from '../middlewares/access-token.guard-middleware';
 import { authLoginInputDtoMiddleware } from '../middlewares/auth-login.input-dto.middleware';
 import { authRegistrationConfirmationMiddleware } from '../middlewares/auth-registration-confirmation-user.middleware';
@@ -26,6 +27,7 @@ authRouter
   )
   .post(
     routersPaths.auth.login,
+    getRateLimitMiddleware(),
     authLoginInputDtoMiddleware,
     inputValidationResultMiddleware,
     loginUserHandler,
@@ -44,18 +46,21 @@ authRouter
   )
   .post(
     routersPaths.auth.registration,
+    getRateLimitMiddleware(),
     userInputDtoMiddleware,
     inputValidationResultMiddleware,
     registrationUserHandler,
   )
   .post(
     routersPaths.auth.registrationConfirmation,
+    getRateLimitMiddleware(),
     authRegistrationConfirmationMiddleware,
     inputValidationResultMiddleware,
     registrationConfirmationUserHandler,
   )
   .post(
     routersPaths.auth.registrationEmailResending,
+    getRateLimitMiddleware(),
     authRegistrationEmailResendingMiddleware,
     inputValidationResultMiddleware,
     registrationEmailResendingUserHandler,

@@ -1,22 +1,18 @@
 import { Response } from 'express';
 import { TRequestWithBody } from '../../../core/types/request';
-import { EResultStatus } from '../../../core/constants/resultCode';
-import { resultCodeToHttpException } from '../../../core/utils/resultCodeToHttpException';
-import { authService } from '../../application/auth.service';
-import { TAuthLogoutInput } from '../input/auth-logout.input';
+import { userDeviceSessionService } from '../../../securityDevices/application/user-device-session.service';
+import { TAuthLoginInput } from '../input/auth-login.input';
 import { EHttpStatus } from '../../../core/constants/http';
+import { routersPaths } from '../../../core/constants/paths';
 
 export const logoutUserHandler = async (
-  req: TRequestWithBody<TAuthLogoutInput>,
+  req: TRequestWithBody<TAuthLoginInput>,
   res: Response,
 ) => {
   const refreshToken = String(req.cookies.refreshToken);
 
-  const result = await authService.logoutUser({ refreshToken });
+  await userDeviceSessionService.deleteUserSessionByRefreshToken(refreshToken);
 
-  if (result.status !== EResultStatus.Success) {
-    return res.sendStatus(resultCodeToHttpException(result.status));
-  }
-
+  res.clearCookie('refreshToken', { path: routersPaths.root });
   res.sendStatus(EHttpStatus.NO_CONTENT_204);
 };

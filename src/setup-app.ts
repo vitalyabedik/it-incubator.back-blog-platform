@@ -6,10 +6,12 @@ import {
   COMMENTS_PATH,
   POSTS_PATH,
   routersPaths,
+  SECURITY_PATH,
   TESTING_PATH,
   USERS_PATH,
 } from './core/constants/paths';
 import { EHttpStatus } from './core/constants/http';
+import { securityDevicesRouter } from './securityDevices/routers/security-devices.router';
 import { authRouter } from './auth/routers/auth.router';
 import { blogsRouter } from './blogs/routers/blogs.router';
 import { postsRouter } from './posts/routers/posts.router';
@@ -20,6 +22,7 @@ import { testingRouter } from './testing/routers/testing.router';
 const MAIN_MESSAGE = 'Hello Blog Platform!';
 
 export const setupApp = (app: Express) => {
+  app.set('trust proxy', true);
   app.use(express.json());
   app.use(cookieParser());
 
@@ -27,6 +30,7 @@ export const setupApp = (app: Express) => {
     res.status(EHttpStatus.OK_200).send(MAIN_MESSAGE);
   });
 
+  app.use(SECURITY_PATH, securityDevicesRouter);
   app.use(AUTH_PATH, authRouter);
   app.use(USERS_PATH, usersRouter);
   app.use(BLOGS_PATH, blogsRouter);
