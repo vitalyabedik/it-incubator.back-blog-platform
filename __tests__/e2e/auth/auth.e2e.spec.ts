@@ -31,9 +31,9 @@ describe('Auth API', () => {
       userData: createdUser,
     });
 
-    const decodedAccessToken = await jwtService.decodeToken(accessToken);
+    const decodedAccessToken = await jwtService.decodeAccessToken(accessToken);
 
-    expect(decodedAccessToken.userId).toBe(createdUser.id);
+    expect(decodedAccessToken!.userId).toBe(createdUser.id);
   });
 
   it('GET /api/auth/me; должен возвращать текущего пользователя', async () => {

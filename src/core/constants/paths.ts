@@ -1,3 +1,4 @@
+export const SECURITY_PATH = '/api/security';
 export const AUTH_PATH = '/api/auth';
 export const USERS_PATH = '/api/users';
 export const BLOGS_PATH = '/api/blogs';
@@ -10,6 +11,9 @@ export const routersPaths = {
   empty: '',
   root: '/',
   byId: '/:id',
+  security: {
+    devices: '/devices',
+  },
   auth: {
     me: '/me',
     login: '/login',

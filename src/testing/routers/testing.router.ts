@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import {
-  revokedRefreshTokenCollection,
+  requestLogsCollection,
+  securityDevicesCollection,
   userCollection,
   blogCollection,
   postCollection,
@@ -15,7 +16,8 @@ testingRouter.delete(
   routersPaths.resetDb,
   async (_: Request, res: Response) => {
     await Promise.all([
-      revokedRefreshTokenCollection.deleteMany(),
+      requestLogsCollection.deleteMany(),
+      securityDevicesCollection.deleteMany(),
       userCollection.deleteMany(),
       blogCollection.deleteMany(),
       postCollection.deleteMany(),
