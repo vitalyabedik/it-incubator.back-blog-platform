@@ -8,6 +8,8 @@ import { authLoginInputDtoMiddleware } from '../middlewares/auth-login.input-dto
 import { authRegistrationConfirmationMiddleware } from '../middlewares/auth-registration-confirmation-user.middleware';
 import { refreshTokenMiddleware } from '../middlewares/refresh-token.guard-middleware';
 import { authRegistrationEmailResendingMiddleware } from '../middlewares/auth-registration-email-resending-user.middleware';
+import { authPasswordRecoveryInputDtoMiddleware } from '../middlewares/auth-password-recovery.input-dto.middleware';
+import { authNewPasswordInputDtoMiddleware } from '../middlewares/auth-new-password.input-dto.middleware';
 import { loginUserHandler } from './handlers/auth-login-user.handler';
 import { getMeUserHandler } from './handlers/auth-get-me-user.handler';
 import { registrationUserHandler } from './handlers/auth-register-user.handler';
@@ -15,6 +17,8 @@ import { registrationConfirmationUserHandler } from './handlers/auth-registratio
 import { registrationEmailResendingUserHandler } from './handlers/auth-registration-email-resending-user.handler';
 import { logoutUserHandler } from './handlers/auth-logout-user.handler';
 import { refreshTokenHandler } from './handlers/auth-refresh-token.handler';
+import { passwordRecoveryHandler } from './handlers/auth-password-recovery.handler';
+import { newPasswordHandler } from './handlers/auth-new-password.handler';
 
 export const authRouter = Router({});
 
@@ -64,4 +68,18 @@ authRouter
     authRegistrationEmailResendingMiddleware,
     inputValidationResultMiddleware,
     registrationEmailResendingUserHandler,
+  )
+  .post(
+    routersPaths.auth.passwordRecovery,
+    getRateLimitMiddleware(),
+    authPasswordRecoveryInputDtoMiddleware,
+    inputValidationResultMiddleware,
+    passwordRecoveryHandler,
+  )
+  .post(
+    routersPaths.auth.newPassword,
+    getRateLimitMiddleware(),
+    authNewPasswordInputDtoMiddleware,
+    inputValidationResultMiddleware,
+    newPasswordHandler,
   );

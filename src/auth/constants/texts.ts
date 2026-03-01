@@ -11,4 +11,5 @@ export const errorMessages = {
   updateIsConfirmedInEmailResending:
     'Ошибка при повторной отправке email поля isConfirmed',
   emailResending: 'Операция с подтверждением кода не выполнена',
+  newPassword: 'Операция с созданием newPassword не выполнена',
 };

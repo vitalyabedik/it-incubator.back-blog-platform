@@ -12,10 +12,19 @@ export const usersRepository = {
     return insertResult.insertedId.toString();
   },
 
-  async update(id: string, updatedUser: TUserDB): Promise<boolean> {
+  async updateUserById(id: string, updatedUser: TUserDB): Promise<boolean> {
     const { modifiedCount } = await userCollection.updateOne(
       { _id: new ObjectId(id) },
       { $set: updatedUser },
+    );
+
+    return modifiedCount > 0;
+  },
+
+  async updateUserPasswordByUserId(id: string, passwordHash: string) {
+    const { modifiedCount } = await userCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { passwordHash }, $unset: { passwordRecovery: '' } },
     );
 
     return modifiedCount > 0;
@@ -50,6 +59,14 @@ export const usersRepository = {
   ): Promise<TUserRepositoryOutput | null> {
     return await userCollection.findOne({
       'emailConfirmation.confirmationCode': code,
+    });
+  },
+
+  async findUserByRecoveryCode(
+    code: string,
+  ): Promise<TUserRepositoryOutput | null> {
+    return await userCollection.findOne({
+      'passwordRecovery.recoveryCode': code,
     });
   },
 };

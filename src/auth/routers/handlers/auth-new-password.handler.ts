@@ -1,16 +1,16 @@
 import { Response } from 'express';
 import { TRequestWithBody } from '../../../core/types/request';
-import { TUserCreateInput } from '../../../users/routes/input/user-create.input';
-import { EResultStatus } from '../../../core/constants/resultCode';
-import { resultCodeToHttpException } from '../../../core/utils/resultCodeToHttpException';
 import { EHttpStatus } from '../../../core/constants/http';
+import { resultCodeToHttpException } from '../../../core/utils/resultCodeToHttpException';
+import { EResultStatus } from '../../../core/constants/resultCode';
 import { authService } from '../../application/auth.service';
+import { TAuthNewPasswordInput } from '../input/auth-new-password.input';
 
-export const registrationUserHandler = async (
-  req: TRequestWithBody<TUserCreateInput>,
+export const newPasswordHandler = async (
+  req: TRequestWithBody<TAuthNewPasswordInput>,
   res: Response,
 ) => {
-  const result = await authService.registerUser(req.body);
+  const result = await authService.createNewPassword(req.body);
 
   if (result.status !== EResultStatus.Success) {
     return res

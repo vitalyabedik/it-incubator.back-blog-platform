@@ -17,7 +17,7 @@ export const refreshTokenHandler = async (
 
   if (result.status !== EResultStatus.Success) {
     return res
-      .sendStatus(resultCodeToHttpException(result.status))
+      .status(resultCodeToHttpException(result.status))
       .send({ errorsMessages: result.extensions });
   }
 

@@ -6,7 +6,7 @@ import { TResult } from '../../core/types/result';
 import { bcryptService } from '../adapters/bcrypt.service';
 import { jwtService } from '../adapters/jwt.service';
 import { nodemailerService } from '../adapters/nodemailer.service';
-import { emailExamples } from '../adapters/emailExamples';
+import { registrationExamples } from '../adapters/registrationExamples';
 import { TAuthLoginInput } from '../routers/input/auth-login.input';
 import { TAuthRegistrationConfirmationInput } from '../routers/input/auth-registration-confirmation-user.input';
 import { TAuthRegistrationEmailResendingInput } from '../routers/input/auth-registration-email-resending-user.input';
@@ -18,8 +18,10 @@ import { TUserCreateInput } from '../../users/routes/input/user-create.input';
 import { TUserDB } from '../../users/domain/userDB';
 import { userDeviceSessionService } from '../../securityDevices/application/user-device-session.service';
 import { TAuthRefreshTokenInput } from '../routers/input/auth-refresh-token.input';
+import { TAuthPasswordRecoveryInput } from '../routers/input/auth-password-recovery.input';
 import { TAuthServiceLoginInput } from './input/auth-service-login.input';
 import { TAuthServiceTokensOutput } from './output/auth-service-tokens.output';
+import { TAuthNewPasswordInput } from '../routers/input/auth-new-password.input';
 
 export const authService = {
   async loginUser({
@@ -194,7 +196,7 @@ export const authService = {
     nodemailerService.sendEmail({
       email: newDbUser.email,
       code: newDbUser.emailConfirmation?.confirmationCode,
-      template: emailExamples.registrationEmail,
+      template: registrationExamples.registrationEmail,
     });
 
     return {
@@ -238,7 +240,7 @@ export const authService = {
       },
     };
 
-    const isUpdated = await usersRepository.update(
+    const isUpdated = await usersRepository.updateUserById(
       userDb._id.toString(),
       newUserDB,
     );
@@ -294,7 +296,7 @@ export const authService = {
       },
     };
 
-    const isUpdated = await usersRepository.update(
+    const isUpdated = await usersRepository.updateUserById(
       userDbByEmail._id.toString(),
       newUserDB,
     );
@@ -316,8 +318,79 @@ export const authService = {
     nodemailerService.sendEmail({
       email: newUserDB.email,
       code: newUserDB.emailConfirmation?.confirmationCode,
-      template: emailExamples.registrationConfirmationEmail,
+      template: registrationExamples.registrationConfirmationEmail,
     });
+
+    return {
+      status: EResultStatus.Success,
+      data: null,
+      extensions: [],
+    };
+  },
+
+  async passwordRecovery(dto: TAuthPasswordRecoveryInput) {
+    const { email } = dto;
+
+    const user = await usersRepository.findUserByLoginOrEmail(email);
+
+    if (user) {
+      const recoveryCode = randomUUID();
+
+      const userData: TUserDB = {
+        ...user,
+        passwordRecovery: {
+          recoveryCode,
+          expirationDate: add(new Date(), { hours: 1 }).toISOString(),
+        },
+      };
+
+      await usersRepository.updateUserById(user._id.toString(), userData);
+
+      nodemailerService
+        .sendEmail({
+          email,
+          code: recoveryCode,
+          template: registrationExamples.recoveryPassword,
+        })
+        .catch((err) => console.log(err));
+    }
+
+    return {
+      status: EResultStatus.Success,
+      data: null,
+      extensions: [],
+    };
+  },
+
+  async createNewPassword(dto: TAuthNewPasswordInput) {
+    const { newPassword, recoveryCode } = dto;
+
+    const user = await usersRepository.findUserByRecoveryCode(recoveryCode);
+
+    if (
+      !user ||
+      !user.passwordRecovery ||
+      new Date(user.passwordRecovery.expirationDate) < new Date()
+    ) {
+      return {
+        status: EResultStatus.BadRequest,
+        data: null,
+        extensions: [
+          {
+            field: EAuthValidationField.RECOVERY_CODE,
+            message: errorMessages.newPassword,
+          },
+        ],
+        errorMessage: errorMessages.newPassword,
+      };
+    }
+
+    const passwordHash = await bcryptService.generateHash(newPassword);
+
+    await usersRepository.updateUserPasswordByUserId(
+      user._id.toString(),
+      passwordHash,
+    );
 
     return {
       status: EResultStatus.Success,
