@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import jwt from 'jsonwebtoken';
 import { SETTINGS } from '../../core/settings';
 
@@ -20,12 +21,15 @@ type TRefreshTokenArgs = TAccessTokenArgs & {
 
 type TVerifyRefreshTokenArgs = TRefreshTokenArgs & { iat: number; exp: number };
 
-export const jwtService = {
+@injectable()
+export class JWTService {
+  constructor() {}
+
   async createAccessToken(args: TAccessTokenArgs): Promise<string> {
     return jwt.sign(args, SETTINGS.AC_SECRET, {
       expiresIn: Number(SETTINGS.AC_TIME),
     });
-  },
+  }
 
   async verifyAccessToken(
     accessToken: string,
@@ -36,13 +40,13 @@ export const jwtService = {
       console.error(ACCESS_TOKEN_VERIFY_ERROR_MESSAGE, error);
       return null;
     }
-  },
+  }
 
   async createRefreshToken(args: TRefreshTokenArgs): Promise<string> {
     return jwt.sign(args, SETTINGS.RT_SECRET, {
       expiresIn: Number(SETTINGS.RT_TIME),
     });
-  },
+  }
 
   async verifyRefreshToken(
     refreshToken: string,
@@ -56,7 +60,7 @@ export const jwtService = {
       console.error(REFRESH_TOKEN_VERIFY_ERROR_MESSAGE, error);
       return null;
     }
-  },
+  }
 
   async decodeAccessToken(
     accessToken: string,
@@ -67,7 +71,7 @@ export const jwtService = {
       console.error(ACCESS_TOKEN_DECODE_ERROR_MESSAGE, error);
       return null;
     }
-  },
+  }
 
   async decodeRefreshToken(
     refreshToken: string,
@@ -78,5 +82,5 @@ export const jwtService = {
       console.error(REFRESH_TOKEN_DECODE_ERROR_MESSAGE, error);
       return null;
     }
-  },
-};
+  }
+}

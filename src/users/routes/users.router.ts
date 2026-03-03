@@ -5,9 +5,10 @@ import { inputValidationResultMiddleware } from '../../core/middlewares/validati
 import { paramsIdValidationMiddleware } from '../../core/middlewares/validation/params-id.validation.middleware';
 import { userInputQueryMiddleware } from '../middlewares/user.input-query.middleware';
 import { userInputDtoMiddleware } from '../middlewares/user.input-dto.middleware';
-import { getUserListHandler } from './handlers/get-user-list.handler';
-import { createUserHandler } from './handlers/create-user.handler';
-import { deleteUserHandler } from './handlers/delete-user.handler';
+import { UsersController } from '../controller/users.controller';
+import { iocContainer } from '../../composition-root';
+
+const usersController = iocContainer.get(UsersController);
 
 export const usersRouter = Router({});
 
@@ -16,19 +17,19 @@ usersRouter
     routersPaths.empty,
     superAdminGuardMiddleware,
     userInputQueryMiddleware,
-    getUserListHandler,
+    usersController.getUserList.bind(usersController),
   )
   .post(
     routersPaths.empty,
     superAdminGuardMiddleware,
     userInputDtoMiddleware,
     inputValidationResultMiddleware,
-    createUserHandler,
+    usersController.createUser.bind(usersController),
   )
   .delete(
     routersPaths.byId,
     superAdminGuardMiddleware,
     paramsIdValidationMiddleware,
     inputValidationResultMiddleware,
-    deleteUserHandler,
+    usersController.deleteUser.bind(usersController),
   );

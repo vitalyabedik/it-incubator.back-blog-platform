@@ -10,15 +10,10 @@ import { refreshTokenMiddleware } from '../middlewares/refresh-token.guard-middl
 import { authRegistrationEmailResendingMiddleware } from '../middlewares/auth-registration-email-resending-user.middleware';
 import { authPasswordRecoveryInputDtoMiddleware } from '../middlewares/auth-password-recovery.input-dto.middleware';
 import { authNewPasswordInputDtoMiddleware } from '../middlewares/auth-new-password.input-dto.middleware';
-import { loginUserHandler } from './handlers/auth-login-user.handler';
-import { getMeUserHandler } from './handlers/auth-get-me-user.handler';
-import { registrationUserHandler } from './handlers/auth-register-user.handler';
-import { registrationConfirmationUserHandler } from './handlers/auth-registration-confirmation-user.handler';
-import { registrationEmailResendingUserHandler } from './handlers/auth-registration-email-resending-user.handler';
-import { logoutUserHandler } from './handlers/auth-logout-user.handler';
-import { refreshTokenHandler } from './handlers/auth-refresh-token.handler';
-import { passwordRecoveryHandler } from './handlers/auth-password-recovery.handler';
-import { newPasswordHandler } from './handlers/auth-new-password.handler';
+import { iocContainer } from '../../composition-root';
+import { AuthController } from '../controller/auth.controller';
+
+const authController = iocContainer.get(AuthController);
 
 export const authRouter = Router({});
 
@@ -27,59 +22,59 @@ authRouter
     routersPaths.auth.me,
     accessTokenMiddleware,
     inputValidationResultMiddleware,
-    getMeUserHandler,
+    authController.getMe.bind(authController),
   )
   .post(
     routersPaths.auth.login,
     getRateLimitMiddleware(),
     authLoginInputDtoMiddleware,
     inputValidationResultMiddleware,
-    loginUserHandler,
+    authController.login.bind(authController),
   )
   .post(
     routersPaths.auth.logout,
     refreshTokenMiddleware,
     inputValidationResultMiddleware,
-    logoutUserHandler,
+    authController.logout.bind(authController),
   )
   .post(
     routersPaths.auth.refreshToken,
     refreshTokenMiddleware,
     inputValidationResultMiddleware,
-    refreshTokenHandler,
+    authController.refreshToken.bind(authController),
   )
   .post(
     routersPaths.auth.registration,
     getRateLimitMiddleware(),
     userInputDtoMiddleware,
     inputValidationResultMiddleware,
-    registrationUserHandler,
+    authController.registration.bind(authController),
   )
   .post(
     routersPaths.auth.registrationConfirmation,
     getRateLimitMiddleware(),
     authRegistrationConfirmationMiddleware,
     inputValidationResultMiddleware,
-    registrationConfirmationUserHandler,
+    authController.registrationConfirmation.bind(authController),
   )
   .post(
     routersPaths.auth.registrationEmailResending,
     getRateLimitMiddleware(),
     authRegistrationEmailResendingMiddleware,
     inputValidationResultMiddleware,
-    registrationEmailResendingUserHandler,
+    authController.registrationEmailResending.bind(authController),
   )
   .post(
     routersPaths.auth.passwordRecovery,
     getRateLimitMiddleware(),
     authPasswordRecoveryInputDtoMiddleware,
     inputValidationResultMiddleware,
-    passwordRecoveryHandler,
+    authController.passwordRecovery.bind(authController),
   )
   .post(
     routersPaths.auth.newPassword,
     getRateLimitMiddleware(),
     authNewPasswordInputDtoMiddleware,
     inputValidationResultMiddleware,
-    newPasswordHandler,
+    authController.newPassword.bind(authController),
   );

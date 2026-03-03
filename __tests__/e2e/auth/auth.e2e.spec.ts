@@ -7,8 +7,11 @@ import { createUser } from '../../utils/users/create-user';
 import { AUTH_PATH, routersPaths } from '../../../src/core/constants/paths';
 import { TUserMeOutput } from '../../../src/users/repositories/output/user-me.output';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { jwtService } from '../../../src/auth/adapters/jwt.service';
+import { JWTService } from '../../../src/auth/adapters/jwt.service';
+import { iocContainer } from '../../../src/composition-root';
 import { getUserDto } from '../../utils/users/get-user-dto';
+
+const jwtService = iocContainer.get(JWTService);
 
 describe('Auth API', () => {
   let app: Express;

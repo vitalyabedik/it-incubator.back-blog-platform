@@ -1,4 +1,5 @@
 import express from 'express';
+import 'reflect-metadata';
 import { setupApp } from './setup-app';
 import { SETTINGS } from './core/settings';
 import { runDB } from './db/mongo.db';

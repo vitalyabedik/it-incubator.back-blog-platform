@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import nodemailer from 'nodemailer';
 import { SETTINGS } from '../../core/settings';
 
@@ -9,7 +10,10 @@ type TArgs = {
 
 const POST_SERVICE = 'gmail';
 
-export const nodemailerService = {
+@injectable()
+export class NodemailerService {
+  constructor() {}
+
   async sendEmail({ email, code, template }: TArgs): Promise<boolean> {
     const transporter = nodemailer.createTransport({
       service: POST_SERVICE,
@@ -27,5 +31,5 @@ export const nodemailerService = {
     });
 
     return Boolean(info);
-  },
-};
+  }
+}

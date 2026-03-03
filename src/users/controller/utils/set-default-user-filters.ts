@@ -1,5 +1,5 @@
-import { defaultUserFilters } from '../../../constants/filters';
-import { TUserFilters } from '../../input/user-query.input';
+import { defaultUserFilters } from '../../constants/filters';
+import { TUserFilters } from '../../routes/input/user-query.input';
 
 export const setDefaultUserFilters = (filters: TUserFilters): TUserFilters => ({
   searchLoginTerm:

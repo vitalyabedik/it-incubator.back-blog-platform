@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { ObjectId } from 'mongodb';
 import { userCollection } from '../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
@@ -5,12 +6,15 @@ import { errorMessages } from '../constants/texts';
 import { TUserDB } from '../domain/userDB';
 import { TUserRepositoryOutput } from './output/user-repository.output';
 
-export const usersRepository = {
+@injectable()
+export class UsersRepository {
+  constructor() {}
+
   async create(newUser: TUserDB): Promise<string> {
     const insertResult = await userCollection.insertOne(newUser);
 
     return insertResult.insertedId.toString();
-  },
+  }
 
   async updateUserById(id: string, updatedUser: TUserDB): Promise<boolean> {
     const { modifiedCount } = await userCollection.updateOne(
@@ -19,7 +23,7 @@ export const usersRepository = {
     );
 
     return modifiedCount > 0;
-  },
+  }
 
   async updateUserPasswordByUserId(id: string, passwordHash: string) {
     const { modifiedCount } = await userCollection.updateOne(
@@ -28,7 +32,7 @@ export const usersRepository = {
     );
 
     return modifiedCount > 0;
-  },
+  }
 
   async delete(id: string): Promise<void> {
     const { deletedCount } = await userCollection.deleteOne({
@@ -40,11 +44,11 @@ export const usersRepository = {
     }
 
     return;
-  },
+  }
 
   async findUserById(id: string): Promise<TUserRepositoryOutput | null> {
     return await userCollection.findOne({ _id: new ObjectId(id) });
-  },
+  }
 
   async findUserByLoginOrEmail(
     loginOrEmail: string,
@@ -52,7 +56,7 @@ export const usersRepository = {
     return await userCollection.findOne({
       $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
     });
-  },
+  }
 
   async findUserByConfirmationCode(
     code: string,
@@ -60,7 +64,7 @@ export const usersRepository = {
     return await userCollection.findOne({
       'emailConfirmation.confirmationCode': code,
     });
-  },
+  }
 
   async findUserByRecoveryCode(
     code: string,
@@ -68,5 +72,5 @@ export const usersRepository = {
     return await userCollection.findOne({
       'passwordRecovery.recoveryCode': code,
     });
-  },
-};
+  }
+}
