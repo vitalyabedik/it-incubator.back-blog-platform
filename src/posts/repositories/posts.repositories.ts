@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { ObjectId } from 'mongodb';
 import { TPostDB } from '../domain/postDB';
 import { TPostUpdateInput } from '../routers/input/post-update.input';
@@ -5,12 +6,15 @@ import { postCollection } from '../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { errorMessages } from '../constants/texts';
 
-export const postsRepository = {
+@injectable()
+export class PostsRepository {
+  constructor() {}
+
   async create(newDbPost: TPostDB): Promise<string> {
     const insertResult = await postCollection.insertOne(newDbPost);
 
     return insertResult.insertedId.toString();
-  },
+  }
 
   async update(id: string, dto: TPostUpdateInput): Promise<void> {
     const { blogId, content, shortDescription, title } = dto;
@@ -34,7 +38,7 @@ export const postsRepository = {
     }
 
     return;
-  },
+  }
 
   async delete(id: string): Promise<void> {
     const { deletedCount } = await postCollection.deleteOne({
@@ -46,5 +50,5 @@ export const postsRepository = {
     }
 
     return;
-  },
-};
+  }
+}

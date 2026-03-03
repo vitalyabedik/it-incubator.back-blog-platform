@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { ObjectId } from 'mongodb';
 import { userCollection } from '../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
@@ -12,7 +13,10 @@ import { mapToUserListPaginatedOutput } from './mappers/map-to-user-list-paginat
 import { mapToUserOutput } from './mappers/map-to-user-output.util';
 import { mapToMeUserOutput } from './mappers/map-to-me-user-output.util';
 
-export const usersQueryRepository = {
+@injectable()
+export class UsersQueryRepository {
+  constructor() {}
+
   async getUserList(
     queryDto: TUserQueryInput,
   ): Promise<TUserListPaginatedOutput> {
@@ -37,7 +41,7 @@ export const usersQueryRepository = {
     });
 
     return userListOutput;
-  },
+  }
 
   async getUserById(id: string): Promise<TUserOutput> {
     const res = await userCollection.findOne({ _id: new ObjectId(id) });
@@ -49,7 +53,7 @@ export const usersQueryRepository = {
     const userOutput = mapToUserOutput(res);
 
     return userOutput;
-  },
+  }
 
   async getUserMeById(id: string): Promise<TUserMeOutput> {
     const res = await userCollection.findOne({ _id: new ObjectId(id) });
@@ -61,5 +65,5 @@ export const usersQueryRepository = {
     const userMeOutput = mapToMeUserOutput(res);
 
     return userMeOutput;
-  },
-};
+  }
+}

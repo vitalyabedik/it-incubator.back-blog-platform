@@ -1,12 +1,13 @@
+import { inject, injectable } from 'inversify';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns/add';
 import { TUserRepositoryOutput } from './../../users/repositories/output/user-repository.output';
-import { usersRepository } from '../../users/repositories/users.repositories';
+import { UsersRepository } from '../../users/repositories/users.repositories';
 import { TResult } from '../../core/types/result';
-import { bcryptService } from '../adapters/bcrypt.service';
-import { jwtService } from '../adapters/jwt.service';
-import { nodemailerService } from '../adapters/nodemailer.service';
-import { emailExamples } from '../adapters/emailExamples';
+import { BcryptService } from '../adapters/bcrypt.service';
+import { JWTService } from '../adapters/jwt.service';
+import { NodemailerService } from '../adapters/nodemailer.service';
+import { registrationExamples } from '../adapters/registrationExamples';
 import { TAuthLoginInput } from '../routers/input/auth-login.input';
 import { TAuthRegistrationConfirmationInput } from '../routers/input/auth-registration-confirmation-user.input';
 import { TAuthRegistrationEmailResendingInput } from '../routers/input/auth-registration-email-resending-user.input';
@@ -16,12 +17,25 @@ import { errorMessages, errorMessageVariant } from '../constants/texts';
 import { mapToDbUser } from '../../users/repositories/mappers/map-to-db-user.util';
 import { TUserCreateInput } from '../../users/routes/input/user-create.input';
 import { TUserDB } from '../../users/domain/userDB';
-import { userDeviceSessionService } from '../../securityDevices/application/user-device-session.service';
+import { UserDeviceSessionService } from '../../securityDevices/application/user-device-session.service';
 import { TAuthRefreshTokenInput } from '../routers/input/auth-refresh-token.input';
+import { TAuthPasswordRecoveryInput } from '../routers/input/auth-password-recovery.input';
 import { TAuthServiceLoginInput } from './input/auth-service-login.input';
 import { TAuthServiceTokensOutput } from './output/auth-service-tokens.output';
+import { TAuthNewPasswordInput } from '../routers/input/auth-new-password.input';
 
-export const authService = {
+@injectable()
+export class AuthService {
+  constructor(
+    @inject(BcryptService) private bcryptService: BcryptService,
+    @inject(JWTService) private jwtService: JWTService,
+    @inject(NodemailerService) private nodemailerService: NodemailerService,
+    @inject(UserDeviceSessionService)
+    private userDeviceSessionService: UserDeviceSessionService,
+    @inject(UsersRepository)
+    private usersRepository: UsersRepository,
+  ) {}
+
   async loginUser({
     deviceName,
     ip,
@@ -47,15 +61,15 @@ export const authService = {
     const userId = user._id.toString();
     const deviceId = randomUUID();
 
-    const accessToken = await jwtService.createAccessToken({
+    const accessToken = await this.jwtService.createAccessToken({
       userId,
     });
-    const refreshToken = await jwtService.createRefreshToken({
+    const refreshToken = await this.jwtService.createRefreshToken({
       userId,
       deviceId,
     });
 
-    await userDeviceSessionService.saveUserSession({
+    await this.userDeviceSessionService.saveUserSession({
       userId,
       refreshToken,
       deviceId,
@@ -68,7 +82,7 @@ export const authService = {
       data: { accessToken, refreshToken },
       extensions: [],
     };
-  },
+  }
 
   async refreshToken({
     ip,
@@ -77,7 +91,7 @@ export const authService = {
     TResult<TAuthServiceTokensOutput | null>
   > {
     const decodedRefreshToken =
-      await jwtService.decodeRefreshToken(refreshToken);
+      await this.jwtService.decodeRefreshToken(refreshToken);
     if (!decodedRefreshToken) {
       return {
         status: EResultStatus.Unauthorized,
@@ -87,7 +101,9 @@ export const authService = {
       };
     }
 
-    const user = await usersRepository.findUserById(decodedRefreshToken.userId);
+    const user = await this.usersRepository.findUserById(
+      decodedRefreshToken.userId,
+    );
     if (!user) {
       return {
         status: EResultStatus.Unauthorized,
@@ -106,15 +122,15 @@ export const authService = {
     const deviceId = decodedRefreshToken.deviceId;
     const prevIat = decodedRefreshToken.iat;
 
-    const newAccessToken = await jwtService.createAccessToken({
+    const newAccessToken = await this.jwtService.createAccessToken({
       userId,
     });
-    const newRefreshToken = await jwtService.createRefreshToken({
+    const newRefreshToken = await this.jwtService.createRefreshToken({
       userId,
       deviceId,
     });
 
-    const isUpdated = await userDeviceSessionService.updateUserSession({
+    const isUpdated = await this.userDeviceSessionService.updateUserSession({
       prevIat,
       ip,
       refreshToken: newRefreshToken,
@@ -140,14 +156,14 @@ export const authService = {
       },
       extensions: [],
     };
-  },
+  }
 
   async registerUser(
     registerDto: TUserCreateInput,
   ): Promise<TResult<string | null>> {
     const { login, password, email } = registerDto;
 
-    const userLogin = await usersRepository.findUserByLoginOrEmail(login);
+    const userLogin = await this.usersRepository.findUserByLoginOrEmail(login);
     if (userLogin)
       return {
         status: EResultStatus.BadRequest,
@@ -161,7 +177,7 @@ export const authService = {
         ],
       };
 
-    const userEmail = await usersRepository.findUserByLoginOrEmail(email);
+    const userEmail = await this.usersRepository.findUserByLoginOrEmail(email);
     if (userEmail)
       return {
         status: EResultStatus.BadRequest,
@@ -175,7 +191,7 @@ export const authService = {
         ],
       };
 
-    const passwordHash = await bcryptService.generateHash(password);
+    const passwordHash = await this.bcryptService.generateHash(password);
 
     const newDbUser = mapToDbUser({
       userDto: registerDto,
@@ -189,12 +205,12 @@ export const authService = {
       },
     });
 
-    const userId = await usersRepository.create(newDbUser);
+    const userId = await this.usersRepository.create(newDbUser);
 
-    nodemailerService.sendEmail({
+    this.nodemailerService.sendEmail({
       email: newDbUser.email,
       code: newDbUser.emailConfirmation?.confirmationCode,
-      template: emailExamples.registrationEmail,
+      template: registrationExamples.registrationEmail,
     });
 
     return {
@@ -202,14 +218,14 @@ export const authService = {
       data: userId,
       extensions: [],
     };
-  },
+  }
 
   async registerUserConfirmation(
     dto: TAuthRegistrationConfirmationInput,
   ): Promise<TResult<null>> {
     const { code } = dto;
 
-    const userDb = await usersRepository.findUserByConfirmationCode(code);
+    const userDb = await this.usersRepository.findUserByConfirmationCode(code);
 
     if (
       !userDb ||
@@ -238,7 +254,7 @@ export const authService = {
       },
     };
 
-    const isUpdated = await usersRepository.update(
+    const isUpdated = await this.usersRepository.updateUserById(
       userDb._id.toString(),
       newUserDB,
     );
@@ -262,14 +278,15 @@ export const authService = {
       data: null,
       extensions: [],
     };
-  },
+  }
 
   async registerUserEmailResending(
     dto: TAuthRegistrationEmailResendingInput,
   ): Promise<TResult<null>> {
     const { email } = dto;
 
-    const userDbByEmail = await usersRepository.findUserByLoginOrEmail(email);
+    const userDbByEmail =
+      await this.usersRepository.findUserByLoginOrEmail(email);
 
     if (!userDbByEmail || userDbByEmail.emailConfirmation.isConfirmed) {
       return {
@@ -294,7 +311,7 @@ export const authService = {
       },
     };
 
-    const isUpdated = await usersRepository.update(
+    const isUpdated = await this.usersRepository.updateUserById(
       userDbByEmail._id.toString(),
       newUserDB,
     );
@@ -313,10 +330,10 @@ export const authService = {
       };
     }
 
-    nodemailerService.sendEmail({
+    this.nodemailerService.sendEmail({
       email: newUserDB.email,
       code: newUserDB.emailConfirmation?.confirmationCode,
-      template: emailExamples.registrationConfirmationEmail,
+      template: registrationExamples.registrationConfirmationEmail,
     });
 
     return {
@@ -324,22 +341,95 @@ export const authService = {
       data: null,
       extensions: [],
     };
-  },
+  }
+
+  async passwordRecovery(dto: TAuthPasswordRecoveryInput) {
+    const { email } = dto;
+
+    const user = await this.usersRepository.findUserByLoginOrEmail(email);
+
+    if (user) {
+      const recoveryCode = randomUUID();
+
+      const userData: TUserDB = {
+        ...user,
+        passwordRecovery: {
+          recoveryCode,
+          expirationDate: add(new Date(), { hours: 1 }).toISOString(),
+        },
+      };
+
+      await this.usersRepository.updateUserById(user._id.toString(), userData);
+
+      this.nodemailerService
+        .sendEmail({
+          email,
+          code: recoveryCode,
+          template: registrationExamples.recoveryPassword,
+        })
+        .catch((err) => console.log(err));
+    }
+
+    return {
+      status: EResultStatus.Success,
+      data: null,
+      extensions: [],
+    };
+  }
+
+  async createNewPassword(dto: TAuthNewPasswordInput) {
+    const { newPassword, recoveryCode } = dto;
+
+    const user =
+      await this.usersRepository.findUserByRecoveryCode(recoveryCode);
+
+    if (
+      !user ||
+      !user.passwordRecovery ||
+      new Date(user.passwordRecovery.expirationDate) < new Date()
+    ) {
+      return {
+        status: EResultStatus.BadRequest,
+        data: null,
+        extensions: [
+          {
+            field: EAuthValidationField.RECOVERY_CODE,
+            message: errorMessages.newPassword,
+          },
+        ],
+        errorMessage: errorMessages.newPassword,
+      };
+    }
+
+    const passwordHash = await this.bcryptService.generateHash(newPassword);
+
+    await this.usersRepository.updateUserPasswordByUserId(
+      user._id.toString(),
+      passwordHash,
+    );
+
+    return {
+      status: EResultStatus.Success,
+      data: null,
+      extensions: [],
+    };
+  }
 
   async _checkUserCredentials(
     loginDto: TAuthLoginInput,
   ): Promise<TUserRepositoryOutput | null> {
     const { loginOrEmail, password } = loginDto;
 
-    const user = await usersRepository.findUserByLoginOrEmail(loginOrEmail);
+    const user =
+      await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
     if (!user || !user.emailConfirmation.isConfirmed) return null;
 
-    const isPassCorrect = await bcryptService.checkPassword(
+    const isPassCorrect = await this.bcryptService.checkPassword(
       password,
       user.passwordHash,
     );
     if (!isPassCorrect) return null;
 
     return user;
-  },
-};
+  }
+}

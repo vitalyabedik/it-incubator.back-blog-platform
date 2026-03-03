@@ -22,6 +22,8 @@ export const routersPaths = {
     registrationConfirmation: '/registration-confirmation',
     registrationEmailResending: '/registration-email-resending',
     refreshToken: '/refresh-token',
+    passwordRecovery: '/password-recovery',
+    newPassword: '/new-password',
   },
   blogs: {
     postsByBlogId: '/:id/posts',

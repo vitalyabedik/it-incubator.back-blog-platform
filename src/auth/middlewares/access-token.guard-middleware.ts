@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { EHttpStatus } from '../../core/constants/http';
 import { TId } from '../../core/types/id';
-import { jwtService } from '../adapters/jwt.service';
+import { JWTService } from '../adapters/jwt.service';
+import { iocContainer } from '../../composition-root';
+
+const jwtService = iocContainer.get(JWTService);
 
 export const accessTokenMiddleware = async (
   req: Request,

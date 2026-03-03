@@ -1,7 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import { EHttpStatus } from '../../core/constants/http';
-import { jwtService } from '../adapters/jwt.service';
-import { userDeviceSessionRepository } from '../../securityDevices/repositories/user-device-session.repositories';
+import { JWTService } from '../adapters/jwt.service';
+import { UserDeviceSessionRepository } from '../../securityDevices/repositories/user-device-session.repositories';
+import { iocContainer } from '../../composition-root';
+
+const jwtService = iocContainer.get(JWTService);
+const userDeviceSessionRepository = iocContainer.get(
+  UserDeviceSessionRepository,
+);
 
 export const refreshTokenMiddleware = async (
   req: Request,

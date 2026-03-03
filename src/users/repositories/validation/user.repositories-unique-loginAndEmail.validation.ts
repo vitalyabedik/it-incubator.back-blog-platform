@@ -2,12 +2,19 @@ import { TAPIErrorResult } from '../../../core/types/error';
 import { createErrorMessages } from '../../../core/utils/errors';
 import { EUserValidationField } from '../../constants/errors';
 import { errorMessages } from '../../constants/texts';
-import { usersRepository } from '../users.repositories';
+import { UsersRepository } from '../users.repositories';
 
-export const checkIsUniqueLoginAndEmail = async (
-  login: string,
-  email: string,
-): Promise<TAPIErrorResult | boolean> => {
+type TArgs = {
+  usersRepository: UsersRepository;
+  login: string;
+  email: string;
+};
+
+export const checkIsUniqueLoginAndEmail = async ({
+  usersRepository,
+  login,
+  email,
+}: TArgs): Promise<TAPIErrorResult | boolean> => {
   const dbLoginOrNull = await usersRepository.findUserByLoginOrEmail(login);
   if (dbLoginOrNull)
     return createErrorMessages([

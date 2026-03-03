@@ -4,9 +4,10 @@ import { paramsIdValidationMiddleware } from '../../core/middlewares/validation/
 import { accessTokenMiddleware } from '../../auth/middlewares/access-token.guard-middleware';
 import { routersPaths } from '../../core/constants/paths';
 import { commentInputDtoMiddleware } from '../middlewares/comment.input-dto.middleware';
-import { getCommentHandler } from './handlers/get-comment.handler';
-import { deleteCommentHandler } from './handlers/delete-comment.handler';
-import { updateCommentHandler } from './handlers/update-comment.handler';
+import { iocContainer } from '../../composition-root';
+import { CommentsController } from '../controller/comments.controller';
+
+const commentsController = iocContainer.get(CommentsController);
 
 export const commentsRouter = Router({});
 
@@ -15,7 +16,7 @@ commentsRouter
     routersPaths.byId,
     paramsIdValidationMiddleware,
     inputValidationResultMiddleware,
-    getCommentHandler,
+    commentsController.getComment.bind(commentsController),
   )
   .put(
     routersPaths.byId,
@@ -23,12 +24,12 @@ commentsRouter
     paramsIdValidationMiddleware,
     commentInputDtoMiddleware,
     inputValidationResultMiddleware,
-    updateCommentHandler,
+    commentsController.updateComment.bind(commentsController),
   )
   .delete(
     routersPaths.byId,
     accessTokenMiddleware,
     paramsIdValidationMiddleware,
     inputValidationResultMiddleware,
-    deleteCommentHandler,
+    commentsController.deleteComment.bind(commentsController),
   );

@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { ObjectId } from 'mongodb';
 import { blogCollection } from '../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
@@ -10,7 +11,10 @@ import { TBlogOutput } from './output/blog.output';
 import { mapToBlogListPaginatedOutput } from './mappers/map-to-blog-list-paginated-output.util.ts';
 import { mapToBlogOutput } from './mappers/map-to-blog-output.util';
 
-export const blogsQueryRepository = {
+@injectable()
+export class BlogsQueryRepository {
+  constructor() {}
+
   async getBlogList(
     queryDto: TBlogQueryInput,
   ): Promise<TBlogListPaginatedOutput> {
@@ -35,7 +39,7 @@ export const blogsQueryRepository = {
     });
 
     return blogListOutput;
-  },
+  }
 
   async getBlogById(id: string): Promise<TBlogOutput> {
     const res = await blogCollection.findOne({ _id: new ObjectId(id) });
@@ -47,5 +51,5 @@ export const blogsQueryRepository = {
     const blogOutput = mapToBlogOutput(res);
 
     return blogOutput;
-  },
-};
+  }
+}

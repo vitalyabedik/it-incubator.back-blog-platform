@@ -2,9 +2,12 @@ import { Router } from 'express';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validation-result.middleware';
 import { routersPaths } from '../../core/constants/paths';
 import { refreshTokenMiddleware } from '../../auth/middlewares/refresh-token.guard-middleware';
-import { getUserDeviceSessionListHandler } from './handlers/get-user-device-session-list.handler';
-import { deleteUserDeviceSessionListHandler } from './handlers/delete-user-device-session-list.handler';
-import { deleteDeviceSessionByIdHandler } from './handlers/delete-user-device-session-by-id.handler';
+import { iocContainer } from '../../composition-root';
+import { UserDeviceSessionController } from '../controller/user-device-session.controller';
+
+const userDeviceSessionController = iocContainer.get(
+  UserDeviceSessionController,
+);
 
 export const securityDevicesRouter = Router({});
 
@@ -13,17 +16,23 @@ securityDevicesRouter
     routersPaths.security.devices,
     refreshTokenMiddleware,
     inputValidationResultMiddleware,
-    getUserDeviceSessionListHandler,
+    userDeviceSessionController.getUserDeviceSessionList.bind(
+      userDeviceSessionController,
+    ),
   )
   .delete(
     routersPaths.security.devices,
     refreshTokenMiddleware,
     inputValidationResultMiddleware,
-    deleteUserDeviceSessionListHandler,
+    userDeviceSessionController.deleteUserDeviceSessionList.bind(
+      userDeviceSessionController,
+    ),
   )
   .delete(
     `${routersPaths.security.devices}${routersPaths.byId}`,
     refreshTokenMiddleware,
     inputValidationResultMiddleware,
-    deleteDeviceSessionByIdHandler,
+    userDeviceSessionController.deleteDeviceSessionByIdHandler.bind(
+      userDeviceSessionController,
+    ),
   );

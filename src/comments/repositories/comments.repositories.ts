@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { ObjectId } from 'mongodb';
 import { commentCollection } from '../../db/mongo.db';
 import { TCommentUpdateInput } from '../routers/input/comment-update.input';
@@ -5,12 +6,15 @@ import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.
 import { errorMessages } from '../constants/texts';
 import { TCommentDB } from '../domain/commentDB';
 
-export const commentsRepository = {
+@injectable()
+export class CommentsRepository {
+  constructor() {}
+
   async create(newComment: TCommentDB): Promise<string> {
     const insertResult = await commentCollection.insertOne(newComment);
 
     return insertResult.insertedId.toString();
-  },
+  }
 
   async update(id: string, dto: TCommentUpdateInput): Promise<void> {
     const { content } = dto;
@@ -29,7 +33,7 @@ export const commentsRepository = {
     }
 
     return;
-  },
+  }
 
   async delete(id: string): Promise<void> {
     const { deletedCount } = await commentCollection.deleteOne({
@@ -41,5 +45,5 @@ export const commentsRepository = {
     }
 
     return;
-  },
-};
+  }
+}

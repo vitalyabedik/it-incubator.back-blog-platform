@@ -7,43 +7,44 @@ import { blogInputDtoMiddleware } from '../middlewares/blog.input-dto.middleware
 import { blogInputQueryMiddleware } from '../middlewares/blog.input-query.middleware';
 import { postByBlogIdInputDtoMiddleware } from '../../posts/middlewares/post.input-dto.middleware';
 import { postInputQueryMiddleware } from '../../posts/middlewares/post.input-query.middleware';
-import { getBlogListHandler } from './handlers/get-blog-list.handler';
-import { getBlogHandler } from './handlers/get-blog.handler';
-import { createBlogHandler } from './handlers/create-blog.handler';
-import { deleteBlogHandler } from './handlers/delete-blog.handler';
-import { updateBlogHandler } from './handlers/update-blog.handler';
-import { getPostListByBlogIdHandler } from './handlers/get-post-list-by-blogId.handler';
-import { createPostByBlogId } from './handlers/create-post-by-blogId.handler';
+import { iocContainer } from '../../composition-root';
+import { BlogsController } from '../controller/blogs.controller';
+
+const blogsController = iocContainer.get(BlogsController);
 
 export const blogsRouter = Router({});
 
 blogsRouter
-  .get(routersPaths.empty, blogInputQueryMiddleware, getBlogListHandler)
+  .get(
+    routersPaths.empty,
+    blogInputQueryMiddleware,
+    blogsController.getBlogList.bind(blogsController),
+  )
   .get(
     routersPaths.blogs.postsByBlogId,
     paramsIdValidationMiddleware,
     postInputQueryMiddleware,
-    getPostListByBlogIdHandler,
+    blogsController.getPostListByBlogId.bind(blogsController),
   )
   .get(
     routersPaths.byId,
     paramsIdValidationMiddleware,
     inputValidationResultMiddleware,
-    getBlogHandler,
+    blogsController.getBlog.bind(blogsController),
   )
   .post(
     routersPaths.empty,
     superAdminGuardMiddleware,
     blogInputDtoMiddleware,
     inputValidationResultMiddleware,
-    createBlogHandler,
+    blogsController.createBlog.bind(blogsController),
   )
   .post(
     routersPaths.blogs.postsByBlogId,
     superAdminGuardMiddleware,
     postByBlogIdInputDtoMiddleware,
     inputValidationResultMiddleware,
-    createPostByBlogId,
+    blogsController.createPostByBlogId.bind(blogsController),
   )
   .put(
     routersPaths.byId,
@@ -51,12 +52,12 @@ blogsRouter
     paramsIdValidationMiddleware,
     blogInputDtoMiddleware,
     inputValidationResultMiddleware,
-    updateBlogHandler,
+    blogsController.updateBlog.bind(blogsController),
   )
   .delete(
     routersPaths.byId,
     superAdminGuardMiddleware,
     paramsIdValidationMiddleware,
     inputValidationResultMiddleware,
-    deleteBlogHandler,
+    blogsController.deleteBlog.bind(blogsController),
   );

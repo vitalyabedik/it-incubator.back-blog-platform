@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { ObjectId } from 'mongodb';
 import { postCollection } from '../../db/mongo.db';
 import { TPostQueryInput } from '../routers/input/post-query.input';
@@ -9,7 +10,10 @@ import { TPostListPaginatedOutput } from './output/post-list-paginated.output';
 import { mapToPostListPaginatedOutput } from './mappers/map-to-post-list-paginated-output.util copy';
 import { mapToPostOutput } from './mappers/map-to-post-output.util';
 
-export const postsQueryRepository = {
+@injectable()
+export class PostsQueryRepository {
+  constructor() {}
+
   async getPostList(
     queryDto: TPostQueryInput,
   ): Promise<TPostListPaginatedOutput> {
@@ -33,7 +37,7 @@ export const postsQueryRepository = {
     });
 
     return postListOutput;
-  },
+  }
 
   async getPostListByBlogId(
     blogId: string,
@@ -56,7 +60,7 @@ export const postsQueryRepository = {
     });
 
     return postListOutput;
-  },
+  }
 
   async getPostById(id: string): Promise<TPostOutput> {
     const res = await postCollection.findOne({ _id: new ObjectId(id) });
@@ -68,5 +72,5 @@ export const postsQueryRepository = {
     const postOutput = mapToPostOutput(res);
 
     return postOutput;
-  },
-};
+  }
+}
