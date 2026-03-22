@@ -5,4 +5,5 @@ export const validationMessages = {
   contentType: 'name должен быть строкой',
   contentLength: 'некорректная длина поля name',
   createdAtType: 'createdAt должен быть в формате DATE ISO STRING',
+  noAccess: 'Недостаточно прав для изменения комментария',
 };

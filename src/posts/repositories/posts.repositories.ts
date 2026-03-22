@@ -1,54 +1,40 @@
 import { injectable } from 'inversify';
-import { ObjectId } from 'mongodb';
-import { TPostDB } from '../domain/postDB';
-import { TPostUpdateInput } from '../routers/input/post-update.input';
-import { postCollection } from '../../db/mongo.db';
+import { Types } from 'mongoose';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { errorMessages } from '../constants/texts';
+import { PostModel, TPost, TPostDocument } from '../model/post.model';
 
 @injectable()
 export class PostsRepository {
   constructor() {}
 
-  async create(newDbPost: TPostDB): Promise<string> {
-    const insertResult = await postCollection.insertOne(newDbPost);
+  async findPostById(id: string) {
+    const res = await PostModel.findById(id);
 
-    return insertResult.insertedId.toString();
-  }
-
-  async update(id: string, dto: TPostUpdateInput): Promise<void> {
-    const { blogId, content, shortDescription, title } = dto;
-
-    const { modifiedCount } = await postCollection.updateOne(
-      {
-        _id: new ObjectId(id),
-      },
-      {
-        $set: {
-          blogId,
-          content,
-          shortDescription,
-          title,
-        },
-      },
-    );
-
-    if (modifiedCount < 1) {
+    if (!res) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
 
-    return;
+    return res;
+  }
+
+  async create(newDbPost: Omit<TPost, '_id'>): Promise<string> {
+    const { id } = await PostModel.create(newDbPost);
+
+    return id;
   }
 
   async delete(id: string): Promise<void> {
-    const { deletedCount } = await postCollection.deleteOne({
-      _id: new ObjectId(id),
+    const { deletedCount } = await PostModel.deleteOne({
+      _id: new Types.ObjectId(id),
     });
 
     if (deletedCount < 1) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
+  }
 
-    return;
+  async savePost(postDocument: TPostDocument) {
+    await postDocument.save();
   }
 }

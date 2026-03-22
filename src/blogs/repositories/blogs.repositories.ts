@@ -1,51 +1,39 @@
 import { injectable } from 'inversify';
-import { ObjectId } from 'mongodb';
-import { blogCollection } from '../../db/mongo.db';
-import { TBlogUpdateInput } from './../routers/input/blog-update.input';
+import { Types } from 'mongoose';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { errorMessages } from '../constants/texts';
-import { TBlogDB } from '../domain/blogDB';
+import { BlogModel, TBlog, TBlogDocument } from '../model/blog.model';
 
 @injectable()
 export class BlogsRepository {
   constructor() {}
 
-  async create(newDbBlog: TBlogDB): Promise<string> {
-    const insertResult = await blogCollection.insertOne(newDbBlog);
-
-    return insertResult.insertedId.toString();
-  }
-
-  async update(id: string, dto: TBlogUpdateInput): Promise<void> {
-    const { name, description, websiteUrl } = dto;
-
-    const { modifiedCount } = await blogCollection.updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          name,
-          description,
-          websiteUrl,
-        },
-      },
-    );
-
-    if (modifiedCount < 1) {
+  async findBlogById(id: string) {
+    const res = await BlogModel.findById(id);
+    if (!res) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
 
-    return;
+    return res;
+  }
+
+  async create(newDbBlog: Omit<TBlog, '_id'>): Promise<string> {
+    const { id } = await BlogModel.create(newDbBlog);
+
+    return id;
   }
 
   async delete(id: string): Promise<void> {
-    const { deletedCount } = await blogCollection.deleteOne({
-      _id: new ObjectId(id),
+    const { deletedCount } = await BlogModel.deleteOne({
+      _id: new Types.ObjectId(id),
     });
 
     if (deletedCount < 1) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
+  }
 
-    return;
+  async saveBlog(blogDocument: TBlogDocument) {
+    await blogDocument.save();
   }
 }

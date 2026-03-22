@@ -4,7 +4,6 @@ import {
   TRequestWithParams,
   TRequestWithParamsAndBody,
 } from '../../core/types/request';
-import { errorsHandler } from '../../core/errors/errors.handler';
 import { CommentsQueryRepository } from '../repositories/comments-query.repositories';
 import { TCommentUpdateInput } from '../routers/input/comment-update.input';
 import { EHttpStatus } from '../../core/constants/http';
@@ -12,6 +11,10 @@ import { CommentsService } from '../application/comments.service';
 import { TGetCommentParams } from './params/get-comment-params';
 import { TUpdateCommentParams } from './params/update-comment-params';
 import { TDeleteCommentParams } from './params/delete-comment-params';
+import { getUserIdFromAccessToken } from '../../core/utils/get-user-id-from-access-token';
+import { EResultStatus } from '../../core/constants/resultCode';
+import { resultCodeToHttpException } from '../../core/utils/resultCodeToHttpException';
+import { TCommentUpdateLikeStatusInput } from '../routers/input/comment-update-like-status.input';
 
 @injectable()
 export class CommentsController {
@@ -23,56 +26,82 @@ export class CommentsController {
   ) {}
 
   async getComment(req: TRequestWithParams<TGetCommentParams>, res: Response) {
-    try {
-      const comment = await this.commentsQueryRepository.getCommentById(
-        req.params.id,
-      );
+    const commentId = req.params.id;
+    const userId =
+      (await getUserIdFromAccessToken(req.headers.authorization)) || undefined;
 
-      res.send(comment);
-    } catch (error: unknown) {
-      errorsHandler(error, res);
+    const comment = await this.commentsQueryRepository.getCommentById({
+      commentId,
+      userId,
+    });
+    if (!comment) {
+      return res.sendStatus(EHttpStatus.NOT_FOUND_404);
     }
+
+    return res.send(comment);
   }
 
-  async updateComment(
+  async updateCommentById(
     req: TRequestWithParamsAndBody<TUpdateCommentParams, TCommentUpdateInput>,
     res: Response,
   ) {
-    try {
-      const userId = req.user?.id;
-      const commentId = req.params.id;
+    const userId = req.user?.id!;
+    const commentId = req.params.id;
+    const content = req.body.content;
 
-      const comment =
-        await this.commentsQueryRepository.getCommentById(commentId);
-      if (comment.commentatorInfo.userId !== userId)
-        return res.sendStatus(EHttpStatus.FORBIDDEN_403);
+    const result = await this.commentsService.updateCommentById({
+      userId,
+      commentId,
+      content,
+    });
 
-      await this.commentsService.update(commentId, req.body);
-
-      res.sendStatus(EHttpStatus.NO_CONTENT_204);
-    } catch (error: unknown) {
-      errorsHandler(error, res);
+    if (result.status !== EResultStatus.Success) {
+      return res.sendStatus(resultCodeToHttpException(result.status));
     }
+
+    return res.sendStatus(EHttpStatus.NO_CONTENT_204);
+  }
+
+  async updateCommentLikeStatus(
+    req: TRequestWithParamsAndBody<
+      TUpdateCommentParams,
+      TCommentUpdateLikeStatusInput
+    >,
+    res: Response,
+  ) {
+    const userId = req.user?.id!;
+    const commentId = req.params.id;
+    const likeStatus = req.body.likeStatus;
+
+    const result = await this.commentsService.updateCommentLikeStatus({
+      userId,
+      commentId,
+      likeStatus,
+    });
+
+    if (result.status !== EResultStatus.Success) {
+      return res.sendStatus(resultCodeToHttpException(result.status));
+    }
+
+    return res.sendStatus(EHttpStatus.NO_CONTENT_204);
   }
 
   async deleteComment(
     req: TRequestWithParams<TDeleteCommentParams>,
     res: Response,
   ) {
-    try {
-      const userId = req.user?.id;
-      const commentId = req.params.id;
+    const userId = req.user?.id!;
+    const commentId = req.params.id;
 
-      const comment =
-        await this.commentsQueryRepository.getCommentById(commentId);
-      if (comment.commentatorInfo.userId !== userId)
-        return res.sendStatus(EHttpStatus.FORBIDDEN_403);
+    const result = await this.commentsService.delete({
+      userId,
+      commentId,
+    });
 
-      await this.commentsService.delete(req.params.id);
-
-      res.sendStatus(EHttpStatus.NO_CONTENT_204);
-    } catch (error: unknown) {
-      errorsHandler(error, res);
+    if (result.status !== EResultStatus.Success) {
+      return res.sendStatus(resultCodeToHttpException(result.status));
     }
+
+    return res.sendStatus(EHttpStatus.NO_CONTENT_204);
   }
 }

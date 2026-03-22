@@ -1,52 +1,73 @@
 import { injectable } from 'inversify';
-import { ObjectId } from 'mongodb';
-import { commentCollection } from '../../db/mongo.db';
-import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { getPaginationParams } from '../../core/utils/getPaginationParams';
-import { errorMessages } from '../constants/texts';
+import { TCommentListQueryInput } from '../routers/input/comment-list-query.input';
 import { TCommentQueryInput } from '../routers/input/comment-query.input';
 import { TCommentListPaginatedOutput } from './output/comment-list-paginated.output';
 import { TCommentOutput } from './output/comment.output';
 import { mapToCommentListPaginatedOutput } from './mappers/map-to-comment-list-paginated-output.util.ts';
 import { mapToCommentOutput } from './mappers/map-to-comment-output.util';
+import { CommentModel } from '../model/comment.model';
+import { LikeModel } from '../../likes/model/like.model';
+import { ELikeStatus } from '../../likes/constants/like-status';
 
 @injectable()
 export class CommentsQueryRepository {
   constructor() {}
 
-  async getCommentById(id: string): Promise<TCommentOutput> {
-    const res = await commentCollection.findOne({ _id: new ObjectId(id) });
+  async getCommentById({
+    commentId,
+    userId,
+  }: TCommentQueryInput): Promise<TCommentOutput | null> {
+    const comment = await CommentModel.findById(commentId).lean().exec();
+    if (!comment) return null;
 
-    if (!res) {
-      throw new RepositoryNotFoundError(errorMessages.noExist);
-    }
-
-    const commentOutput = mapToCommentOutput(res);
+    const parentId = comment._id.toString();
+    const like = userId
+      ? await LikeModel.findOne({
+          parentId,
+          authorId: userId,
+          status: { $ne: ELikeStatus.None },
+        })
+          .select('status')
+          .lean()
+          .exec()
+      : null;
+    const commentOutput = mapToCommentOutput({
+      comment,
+      likeStatus: like?.status || ELikeStatus.None,
+    });
 
     return commentOutput;
   }
 
   async getCommentListByPostId(
     postId: string,
-    queryDto: TCommentQueryInput,
+    queryDto: TCommentListQueryInput,
+    userId?: string,
   ): Promise<TCommentListPaginatedOutput> {
     const { sort, skip, limit } = getPaginationParams(queryDto);
-    const filter = { postId };
 
-    const items = await commentCollection
-      .find(filter)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .toArray();
+    const [items, totalCount] = await Promise.all([
+      CommentModel.find({ postId }).lean().sort(sort).skip(skip).limit(limit),
+      CommentModel.countDocuments({ postId }),
+    ]);
 
-    const totalCount = await commentCollection.countDocuments(filter);
+    const commentsIds = items.map((c) => c._id.toString());
 
-    const commentListOutput = mapToCommentListPaginatedOutput(items, {
-      pagination: {
-        page: queryDto.pageNumber,
-        pageSize: queryDto.pageSize,
-        totalCount,
+    const likes = await LikeModel.find({ parentId: { $in: commentsIds } })
+      .lean()
+      .exec();
+
+    const commentListOutput = mapToCommentListPaginatedOutput({
+      comments: items,
+      likes,
+      userId,
+      meta: {
+        pagination: {
+          page: queryDto.pageNumber,
+          pageSize: queryDto.pageSize,
+          totalCount,
+        },
       },
     });
 

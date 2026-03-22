@@ -25,7 +25,7 @@ export const refreshTokenMiddleware = async (
       deviceId: result.deviceId,
     });
 
-  if (!tokenSession || tokenSession.iat !== result.iat)
+  if (!tokenSession || tokenSession.iat.getTime() / 1000 !== result.iat)
     return res.sendStatus(EHttpStatus.UNAUTHORIZED_401);
 
   next();

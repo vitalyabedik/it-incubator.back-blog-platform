@@ -12,4 +12,5 @@ export const errorMessages = {
     'Ошибка при повторной отправке email поля isConfirmed',
   emailResending: 'Операция с подтверждением кода не выполнена',
   newPassword: 'Операция с созданием newPassword не выполнена',
+  notFoundSession: 'Не найдена сессия с таким deviceId',
 };

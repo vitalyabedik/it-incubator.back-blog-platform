@@ -1,13 +1,25 @@
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
-import { TCommentQueryRepositoryOutput } from '../output/comment-query-repository.output';
+import { ELikeStatus } from '../../../likes/constants/like-status';
+import { TLike } from '../../../likes/model/like.model';
+import { TComment } from '../../model/comment.model';
 import { TCommentListPaginatedOutput } from '../output/comment-list-paginated.output';
+import { mapToCommentOutput } from './map-to-comment-output.util';
 
-export const mapToCommentListPaginatedOutput = (
-  comments: TCommentQueryRepositoryOutput[],
+type TArgs = {
+  comments: TComment[];
+  likes: TLike[];
+  userId?: string;
   meta: {
     pagination: TPaginationMeta;
-  },
-): TCommentListPaginatedOutput => {
+  };
+};
+
+export const mapToCommentListPaginatedOutput = ({
+  comments,
+  likes,
+  userId,
+  meta,
+}: TArgs): TCommentListPaginatedOutput => {
   const { page, pageSize, totalCount } = meta.pagination;
 
   return {
@@ -16,14 +28,17 @@ export const mapToCommentListPaginatedOutput = (
     pagesCount: Math.ceil(totalCount / pageSize),
     totalCount: totalCount,
 
-    items: comments.map((comment) => ({
-      id: comment._id.toString(),
-      content: comment.content,
-      commentatorInfo: {
-        userId: comment.commentatorInfo.userId,
-        userLogin: comment.commentatorInfo.userLogin,
-      },
-      createdAt: comment.createdAt,
-    })),
+    items: comments.map((comment) => {
+      const like = likes.find(
+        (like) =>
+          like.parentId === comment._id.toString() && like.authorId === userId,
+      );
+
+      return mapToCommentOutput({
+        comment,
+        likeStatus:
+          like && like.authorId === userId ? like.status : ELikeStatus.None,
+      });
+    }),
   };
 };

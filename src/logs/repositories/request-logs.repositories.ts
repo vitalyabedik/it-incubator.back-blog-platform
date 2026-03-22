@@ -1,21 +1,20 @@
 import { sub } from 'date-fns';
-import { requestLogsCollection } from '../../db/mongo.db';
-import { TRequestLogsDB } from '../domain/request-logs-db';
+import { RequestLogModel, TRequestLog } from '../model/request-log.model';
 
 export const requestLogsRepository = {
-  async addRequestLog(log: TRequestLogsDB): Promise<string> {
-    const { insertedId } = await requestLogsCollection.insertOne(log);
+  async addRequestLog(log: Omit<TRequestLog, '_id'>): Promise<string> {
+    const { id } = await RequestLogModel.create(log);
 
-    return insertedId.toString();
+    return id;
   },
 
   async getRequestByFilterCount(
     filter: { timeWindowDurationSeconds: number } & Omit<
-      TRequestLogsDB,
-      'date'
+      TRequestLog,
+      '_id' | 'date'
     >,
   ): Promise<number> {
-    const count = await requestLogsCollection.countDocuments({
+    const count = await RequestLogModel.countDocuments({
       ip: filter.ip,
       url: filter.url,
       date: {

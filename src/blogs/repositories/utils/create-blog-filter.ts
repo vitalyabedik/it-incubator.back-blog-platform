@@ -1,8 +1,8 @@
-import { Filter } from 'mongodb';
-import { TBlog } from '../../domain/blog';
+import { QueryFilter } from 'mongoose';
 import { TBlogQueryInput } from '../../routers/input/blog-query.input';
+import { TBlog } from '../../model/blog.model';
 
-type TBlogFilter = Filter<TBlog> & {
+type TBlogFilter = QueryFilter<TBlog> & {
   name?: {
     $regex: string;
     $options: string;

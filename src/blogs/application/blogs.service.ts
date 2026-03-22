@@ -18,12 +18,16 @@ export class BlogsService {
   }
 
   async update(id: string, dto: TBlogUpdateInput): Promise<void> {
-    await this.blogsRepository.update(id, dto);
-    return;
+    const blog = await this.blogsRepository.findBlogById(id);
+
+    blog.name = dto.name;
+    blog.description = dto.description;
+    blog.websiteUrl = dto.websiteUrl;
+
+    await this.blogsRepository.saveBlog(blog);
   }
 
   async delete(id: string): Promise<void> {
     await this.blogsRepository.delete(id);
-    return;
   }
 }
