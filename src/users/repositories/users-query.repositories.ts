@@ -1,6 +1,4 @@
 import { injectable } from 'inversify';
-import { ObjectId } from 'mongodb';
-import { userCollection } from '../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { getPaginationParams } from '../../core/utils/getPaginationParams';
 import { TUserQueryInput } from '../routes/input/user-query.input';
@@ -12,6 +10,9 @@ import { TUserMeOutput } from './output/user-me.output';
 import { mapToUserListPaginatedOutput } from './mappers/map-to-user-list-paginated-output.util';
 import { mapToUserOutput } from './mappers/map-to-user-output.util';
 import { mapToMeUserOutput } from './mappers/map-to-me-user-output.util';
+import { TUserMapInput, UserModel } from '../model/user.model';
+
+const CREATED_MESSAGE = '_id login email createdAt';
 
 @injectable()
 export class UsersQueryRepository {
@@ -23,15 +24,16 @@ export class UsersQueryRepository {
     const { sort, skip, limit } = getPaginationParams(queryDto);
     const filter = createUserFilter(queryDto);
 
-    const items = await userCollection
-      .find(filter)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .toArray();
-
-    const totalCount = await userCollection.countDocuments(filter);
-
+    const [items, totalCount] = await Promise.all([
+      UserModel.find(filter)
+        .select(CREATED_MESSAGE)
+        .lean<TUserMapInput[]>()
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      UserModel.countDocuments(filter).exec(),
+    ]);
     const userListOutput = mapToUserListPaginatedOutput(items, {
       pagination: {
         page: queryDto.pageNumber,
@@ -44,8 +46,10 @@ export class UsersQueryRepository {
   }
 
   async getUserById(id: string): Promise<TUserOutput> {
-    const res = await userCollection.findOne({ _id: new ObjectId(id) });
-
+    const res = await UserModel.findById(id)
+      .select(CREATED_MESSAGE)
+      .lean<TUserMapInput>()
+      .exec();
     if (!res) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
@@ -56,8 +60,10 @@ export class UsersQueryRepository {
   }
 
   async getUserMeById(id: string): Promise<TUserMeOutput> {
-    const res = await userCollection.findOne({ _id: new ObjectId(id) });
-
+    const res = await UserModel.findById(id)
+      .select(CREATED_MESSAGE)
+      .lean<TUserMapInput>()
+      .exec();
     if (!res) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }

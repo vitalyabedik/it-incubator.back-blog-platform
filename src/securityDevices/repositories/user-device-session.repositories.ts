@@ -1,8 +1,10 @@
 import { injectable } from 'inversify';
-import { securityDevicesCollection } from '../../db/mongo.db';
-import { TDeviceDB } from '../domain/deviceDB';
+import {
+  TUserDeviceSession,
+  TUserDeviceSessionDocument,
+  UserDeviceSessionModel,
+} from '../model/user-device-session.model';
 import { TGetUserDeviceSessionBuFilterRepository } from './input/get-user-device-session-by-filter-repository.input';
-import { TUpdateUserDeviceSessionRepository } from './input/update-user-device-session-repository.input';
 import { createUserDeviceSessionFilter } from './utils/create-user-device-session-filter';
 
 @injectable()
@@ -10,7 +12,7 @@ export class UserDeviceSessionRepository {
   constructor() {}
 
   async getUserDeviceSessionListByUserId(userId: string) {
-    return await securityDevicesCollection.find({ userId }).toArray();
+    return UserDeviceSessionModel.find({ userId }).exec();
   }
 
   async getUserDeviceSessionByFilter(
@@ -19,31 +21,19 @@ export class UserDeviceSessionRepository {
     const deviceFilter = createUserDeviceSessionFilter(filter);
     if (Object.keys(deviceFilter).length === 0) return null;
 
-    return await securityDevicesCollection.findOne(deviceFilter);
+    return UserDeviceSessionModel.findOne(deviceFilter).exec();
   }
 
-  async addUserDeviceSession(userDeviceSession: TDeviceDB): Promise<string> {
-    const { insertedId } =
-      await securityDevicesCollection.insertOne(userDeviceSession);
+  async addUserDeviceSession(
+    userDeviceSession: Omit<TUserDeviceSession, '_id'>,
+  ): Promise<string> {
+    const { id } = await UserDeviceSessionModel.create(userDeviceSession);
 
-    return insertedId.toString();
-  }
-
-  async updateUserDeviceSession({
-    deviceId,
-    prevIat,
-    ...restData
-  }: TUpdateUserDeviceSessionRepository): Promise<boolean> {
-    const { modifiedCount } = await securityDevicesCollection.updateOne(
-      { deviceId, iat: prevIat },
-      { $set: restData },
-    );
-
-    return modifiedCount > 0;
+    return id;
   }
 
   async deleteUserDeviceSessionListExceptTheCurrent(deviceId: string) {
-    const { deletedCount } = await securityDevicesCollection.deleteMany({
+    const { deletedCount } = await UserDeviceSessionModel.deleteMany({
       deviceId: { $ne: deviceId },
     });
 
@@ -51,10 +41,14 @@ export class UserDeviceSessionRepository {
   }
 
   async deleteUserDeviceSessionByDeviceId(deviceId: string) {
-    const { deletedCount } = await securityDevicesCollection.deleteOne({
+    const { deletedCount } = await UserDeviceSessionModel.deleteOne({
       deviceId,
     });
 
     return deletedCount > 0;
+  }
+
+  async saveSession(userDeviceSession: TUserDeviceSessionDocument) {
+    await userDeviceSession.save();
   }
 }

@@ -1,6 +1,6 @@
 import { TPostCreateInput } from '../../routers/input/post-create.input';
-import { TPostDB } from '../../domain/postDB';
 import { TBlogOutput } from '../../../blogs/repositories/output/blog.output';
+import { TPost } from '../../model/post.model';
 
 type TArgs = {
   blogId: string;
@@ -8,11 +8,15 @@ type TArgs = {
   dto: TPostCreateInput;
 };
 
-export const mapToDbPost = ({ blogId, blog, dto }: TArgs): TPostDB => ({
+export const mapToDbPost = ({
+  blogId,
+  blog,
+  dto,
+}: TArgs): Omit<TPost, '_id'> => ({
   blogId,
   blogName: blog.name,
   content: dto.content,
   shortDescription: dto.shortDescription,
   title: dto.title,
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 });

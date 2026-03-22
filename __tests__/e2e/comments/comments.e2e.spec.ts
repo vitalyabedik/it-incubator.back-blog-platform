@@ -138,6 +138,8 @@ describe('Comment API', () => {
     });
 
     const updatedCommentData: TCommentUpdateInput = {
+      userId: createdUser.id,
+      commentId: createdComment.id,
       content: 'обновленный 1'.repeat(3),
     };
 
@@ -151,7 +153,7 @@ describe('Comment API', () => {
 
     expect(comment).toEqual({
       ...createdComment,
-      ...updatedCommentData,
+      content: updatedCommentData.content,
     } as TCommentOutput);
   });
 

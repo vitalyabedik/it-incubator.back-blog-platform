@@ -1,8 +1,8 @@
+import { TUserMapInput } from '../../model/user.model';
 import { TUserMeOutput } from '../output/user-me.output';
-import { TUserQueryRepositoryOutput } from '../output/user-query-repository.output';
 
 export const mapToMeUserOutput = (
-  userQueryRepoOutput: TUserQueryRepositoryOutput,
+  userQueryRepoOutput: TUserMapInput,
 ): TUserMeOutput => ({
   userId: userQueryRepoOutput._id.toString(),
   login: userQueryRepoOutput.login,

@@ -1,8 +1,8 @@
-import { Filter } from 'mongodb';
-import { TUserDB } from '../../domain/userDB';
+import { QueryFilter } from 'mongoose';
 import { TUserQueryInput } from '../../routes/input/user-query.input';
+import { TUser } from '../../model/user.model';
 
-type TUserFilter = Filter<TUserDB> & {
+type TUserFilter = QueryFilter<TUser> & {
   login?: {
     $regex: string;
     $options: string;

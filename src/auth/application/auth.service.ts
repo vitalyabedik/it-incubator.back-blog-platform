@@ -1,7 +1,6 @@
 import { inject, injectable } from 'inversify';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns/add';
-import { TUserRepositoryOutput } from './../../users/repositories/output/user-repository.output';
 import { UsersRepository } from '../../users/repositories/users.repositories';
 import { TResult } from '../../core/types/result';
 import { BcryptService } from '../adapters/bcrypt.service';
@@ -16,13 +15,15 @@ import { EAuthValidationField } from '../constants/errors';
 import { errorMessages, errorMessageVariant } from '../constants/texts';
 import { mapToDbUser } from '../../users/repositories/mappers/map-to-db-user.util';
 import { TUserCreateInput } from '../../users/routes/input/user-create.input';
-import { TUserDB } from '../../users/domain/userDB';
 import { UserDeviceSessionService } from '../../securityDevices/application/user-device-session.service';
 import { TAuthRefreshTokenInput } from '../routers/input/auth-refresh-token.input';
 import { TAuthPasswordRecoveryInput } from '../routers/input/auth-password-recovery.input';
 import { TAuthServiceLoginInput } from './input/auth-service-login.input';
 import { TAuthServiceTokensOutput } from './output/auth-service-tokens.output';
 import { TAuthNewPasswordInput } from '../routers/input/auth-new-password.input';
+import { UserDeviceSessionRepository } from '../../securityDevices/repositories/user-device-session.repositories';
+import { convertUnixTimeToDate } from '../../core/utils/convert-unix-time-to-date';
+import { TUser, TUserDocument } from '../../users/model/user.model';
 
 @injectable()
 export class AuthService {
@@ -32,6 +33,8 @@ export class AuthService {
     @inject(NodemailerService) private nodemailerService: NodemailerService,
     @inject(UserDeviceSessionService)
     private userDeviceSessionService: UserDeviceSessionService,
+    @inject(UserDeviceSessionRepository)
+    private userDeviceSessionRepository: UserDeviceSessionRepository,
     @inject(UsersRepository)
     private usersRepository: UsersRepository,
   ) {}
@@ -118,9 +121,27 @@ export class AuthService {
       };
     }
 
+    const session =
+      await this.userDeviceSessionRepository.getUserDeviceSessionByFilter({
+        deviceId: decodedRefreshToken.deviceId,
+        iat: convertUnixTimeToDate(decodedRefreshToken.iat),
+      });
+    if (!session) {
+      return {
+        status: EResultStatus.NotFound,
+        errorMessage: errorMessageVariant.refreshToken,
+        data: null,
+        extensions: [
+          {
+            field: EAuthValidationField.DEVICE_ID,
+            message: errorMessages.notFoundSession,
+          },
+        ],
+      };
+    }
+
     const userId = user._id.toString();
     const deviceId = decodedRefreshToken.deviceId;
-    const prevIat = decodedRefreshToken.iat;
 
     const newAccessToken = await this.jwtService.createAccessToken({
       userId,
@@ -130,23 +151,14 @@ export class AuthService {
       deviceId,
     });
 
-    const isUpdated = await this.userDeviceSessionService.updateUserSession({
-      prevIat,
-      ip,
-      refreshToken: newRefreshToken,
-    });
-    if (!isUpdated)
-      return {
-        status: EResultStatus.Unauthorized,
-        errorMessage: errorMessageVariant.refreshToken,
-        data: null,
-        extensions: [
-          {
-            field: EAuthValidationField.REFRESH_TOKEN,
-            message: errorMessageVariant.refreshToken,
-          },
-        ],
-      };
+    const newDecodedRefreshToken =
+      await this.jwtService.decodeRefreshToken(refreshToken);
+
+    session.ip = ip;
+    session.iat = convertUnixTimeToDate(newDecodedRefreshToken!.iat);
+    session.expirationAt = convertUnixTimeToDate(newDecodedRefreshToken!.exp);
+
+    await this.userDeviceSessionRepository.saveSession(session);
 
     return {
       status: EResultStatus.Success,
@@ -193,14 +205,14 @@ export class AuthService {
 
     const passwordHash = await this.bcryptService.generateHash(password);
 
-    const newDbUser = mapToDbUser({
+    const newDbUser: Omit<TUser, '_id'> = mapToDbUser({
       userDto: registerDto,
       extraDBFields: {
         passwordHash,
         emailConfirmation: {
           isConfirmed: false,
           confirmationCode: randomUUID(),
-          expirationDate: add(new Date(), { hours: 1 }).toISOString(),
+          expirationDate: add(new Date(), { hours: 1 }),
         },
       },
     });
@@ -230,7 +242,8 @@ export class AuthService {
     if (
       !userDb ||
       userDb.emailConfirmation.isConfirmed ||
-      new Date(userDb.emailConfirmation.expirationDate) < new Date()
+      (userDb.emailConfirmation.expirationDate &&
+        userDb.emailConfirmation.expirationDate < new Date())
     ) {
       return {
         data: null,
@@ -245,33 +258,13 @@ export class AuthService {
       };
     }
 
-    const newUserDB: TUserDB = {
-      ...userDb,
-      emailConfirmation: {
-        isConfirmed: true,
-        confirmationCode: randomUUID(),
-        expirationDate: add(new Date(), { hours: 1 }).toISOString(),
-      },
+    userDb.emailConfirmation = {
+      isConfirmed: true,
+      confirmationCode: '',
+      expirationDate: null,
     };
 
-    const isUpdated = await this.usersRepository.updateUserById(
-      userDb._id.toString(),
-      newUserDB,
-    );
-
-    if (!isUpdated) {
-      return {
-        status: EResultStatus.BadRequest,
-        data: null,
-        extensions: [
-          {
-            field: EAuthValidationField.CODE,
-            message: errorMessages.updateIsConfirmedInRegistrationConfirmation,
-          },
-        ],
-        errorMessage: errorMessages.updateIsConfirmedInRegistrationConfirmation,
-      };
-    }
+    await this.usersRepository.saveUser(userDb);
 
     return {
       status: EResultStatus.Success,
@@ -285,10 +278,8 @@ export class AuthService {
   ): Promise<TResult<null>> {
     const { email } = dto;
 
-    const userDbByEmail =
-      await this.usersRepository.findUserByLoginOrEmail(email);
-
-    if (!userDbByEmail || userDbByEmail.emailConfirmation.isConfirmed) {
+    const user = await this.usersRepository.findUserByLoginOrEmail(email);
+    if (!user || user.emailConfirmation.isConfirmed) {
       return {
         data: null,
         status: EResultStatus.BadRequest,
@@ -302,37 +293,17 @@ export class AuthService {
       };
     }
 
-    const newUserDB: TUserDB = {
-      ...userDbByEmail,
-      emailConfirmation: {
-        isConfirmed: false,
-        confirmationCode: randomUUID(),
-        expirationDate: add(new Date(), { hours: 1 }).toISOString(),
-      },
+    user.emailConfirmation = {
+      isConfirmed: false,
+      confirmationCode: randomUUID(),
+      expirationDate: add(new Date(), { hours: 1 }),
     };
 
-    const isUpdated = await this.usersRepository.updateUserById(
-      userDbByEmail._id.toString(),
-      newUserDB,
-    );
-
-    if (!isUpdated) {
-      return {
-        status: EResultStatus.BadRequest,
-        data: null,
-        extensions: [
-          {
-            field: EAuthValidationField.EMAIL,
-            message: errorMessages.updateIsConfirmedInEmailResending,
-          },
-        ],
-        errorMessage: errorMessages.updateIsConfirmedInEmailResending,
-      };
-    }
+    await this.usersRepository.saveUser(user);
 
     this.nodemailerService.sendEmail({
-      email: newUserDB.email,
-      code: newUserDB.emailConfirmation?.confirmationCode,
+      email: user.email,
+      code: user.emailConfirmation?.confirmationCode,
       template: registrationExamples.registrationConfirmationEmail,
     });
 
@@ -351,15 +322,12 @@ export class AuthService {
     if (user) {
       const recoveryCode = randomUUID();
 
-      const userData: TUserDB = {
-        ...user,
-        passwordRecovery: {
-          recoveryCode,
-          expirationDate: add(new Date(), { hours: 1 }).toISOString(),
-        },
+      user.passwordRecovery = {
+        recoveryCode,
+        expirationDate: add(new Date(), { hours: 1 }),
       };
 
-      await this.usersRepository.updateUserById(user._id.toString(), userData);
+      await this.usersRepository.saveUser(user);
 
       this.nodemailerService
         .sendEmail({
@@ -386,7 +354,8 @@ export class AuthService {
     if (
       !user ||
       !user.passwordRecovery ||
-      new Date(user.passwordRecovery.expirationDate) < new Date()
+      (user.passwordRecovery.expirationDate &&
+        user.passwordRecovery.expirationDate < new Date())
     ) {
       return {
         status: EResultStatus.BadRequest,
@@ -403,10 +372,9 @@ export class AuthService {
 
     const passwordHash = await this.bcryptService.generateHash(newPassword);
 
-    await this.usersRepository.updateUserPasswordByUserId(
-      user._id.toString(),
-      passwordHash,
-    );
+    user.passwordHash = passwordHash;
+
+    await this.usersRepository.saveUser(user);
 
     return {
       status: EResultStatus.Success,
@@ -417,7 +385,7 @@ export class AuthService {
 
   async _checkUserCredentials(
     loginDto: TAuthLoginInput,
-  ): Promise<TUserRepositoryOutput | null> {
+  ): Promise<TUserDocument | null> {
     const { loginOrEmail, password } = loginDto;
 
     const user =

@@ -12,7 +12,7 @@ import { setDefaultSortAndPagination } from '../../core/utils/set-default-sort-a
 import { EHttpStatus } from '../../core/constants/http';
 import { errorsHandler } from '../../core/errors/errors.handler';
 import { CommentsQueryRepository } from '../../comments/repositories/comments-query.repositories';
-import { TCommentQueryInput } from '../../comments/routers/input/comment-query.input';
+import { TCommentListQueryInput } from '../../comments/routers/input/comment-list-query.input';
 import { TPostQueryInput } from '../routers/input/post-query.input';
 import { PostsQueryRepository } from '../repositories/posts-query.repositories';
 import { TGetCommentListByPostIdParams } from './params/get-comment-list-by-postId-params';
@@ -24,6 +24,7 @@ import { TCommentCreateInput } from '../../comments/routers/input/comment-create
 import { CommentsService } from '../../comments/application/comments.service';
 import { TDeletePostParams } from './params/delete-post-params';
 import { TPostUpdateInput } from '../routers/input/post-update.input';
+import { getUserIdFromAccessToken } from '../../core/utils/get-user-id-from-access-token';
 
 @injectable()
 export class PostsController {
@@ -102,14 +103,17 @@ export class PostsController {
   async getCommentListByPostId(
     req: TRequestWithParamsAndQuery<
       TGetCommentListByPostIdParams,
-      TCommentQueryInput
+      TCommentListQueryInput
     >,
     res: Response,
   ) {
     try {
       const postId = req.params.id;
+      const userId =
+        (await getUserIdFromAccessToken(req.headers.authorization)) ||
+        undefined;
 
-      const query = matchedData<TCommentQueryInput>(req, {
+      const query = matchedData<TCommentListQueryInput>(req, {
         locations: ['query'],
         includeOptionals: true,
       });
@@ -121,6 +125,7 @@ export class PostsController {
         await this.commentsQueryRepository.getCommentListByPostId(
           postId,
           query,
+          userId,
         );
 
       res.send(commentList);
@@ -137,14 +142,18 @@ export class PostsController {
     res: Response,
   ) {
     try {
-      const commentId = await this.commentsService.createCommentByPostId({
-        userId: req.user?.id || '',
+      const userId = req.user?.id!;
+
+      const result = await this.commentsService.createCommentByPostId({
+        userId,
         postId: req.params.id,
         dto: req.body,
       });
 
-      const createdComment =
-        await this.commentsQueryRepository.getCommentById(commentId);
+      const createdComment = await this.commentsQueryRepository.getCommentById({
+        commentId: result.data.commentId,
+        userId,
+      });
 
       res.status(EHttpStatus.CREATED_201).send(createdComment);
     } catch (error: unknown) {

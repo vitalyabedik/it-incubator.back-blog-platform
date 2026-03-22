@@ -1,9 +1,10 @@
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
-import { TPostQueryRepositoryOutput } from '../output/post-query-repository.output';
+import { TPost } from '../../model/post.model';
 import { TPostListPaginatedOutput } from '../output/post-list-paginated.output';
+import { mapToPostOutput } from './map-to-post-output.util';
 
 export const mapToPostListPaginatedOutput = (
-  posts: TPostQueryRepositoryOutput[],
+  posts: TPost[],
   meta: {
     pagination: TPaginationMeta;
   },
@@ -16,14 +17,6 @@ export const mapToPostListPaginatedOutput = (
     pagesCount: Math.ceil(totalCount / pageSize),
     totalCount: totalCount,
 
-    items: posts.map((post) => ({
-      id: post._id.toString(),
-      blogId: post.blogId,
-      blogName: post.blogName,
-      title: post.title,
-      content: post.content,
-      shortDescription: post.shortDescription,
-      createdAt: post.createdAt,
-    })),
+    items: posts.map(mapToPostOutput),
   };
 };

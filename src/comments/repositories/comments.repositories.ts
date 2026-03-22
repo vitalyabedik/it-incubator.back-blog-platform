@@ -1,49 +1,34 @@
 import { injectable } from 'inversify';
-import { ObjectId } from 'mongodb';
-import { commentCollection } from '../../db/mongo.db';
-import { TCommentUpdateInput } from '../routers/input/comment-update.input';
-import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
-import { errorMessages } from '../constants/texts';
-import { TCommentDB } from '../domain/commentDB';
+import { Types } from 'mongoose';
+import {
+  CommentModel,
+  TComment,
+  TCommentDocument,
+} from '../model/comment.model';
 
 @injectable()
 export class CommentsRepository {
   constructor() {}
 
-  async create(newComment: TCommentDB): Promise<string> {
-    const insertResult = await commentCollection.insertOne(newComment);
-
-    return insertResult.insertedId.toString();
+  async findCommentById(id: string) {
+    return await CommentModel.findById(id);
   }
 
-  async update(id: string, dto: TCommentUpdateInput): Promise<void> {
-    const { content } = dto;
+  async create(newComment: Omit<TComment, '_id'>): Promise<string> {
+    const { id } = await CommentModel.create(newComment);
 
-    const { modifiedCount } = await commentCollection.updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          content,
-        },
-      },
-    );
-
-    if (modifiedCount < 1) {
-      throw new RepositoryNotFoundError(errorMessages.noExist);
-    }
-
-    return;
+    return id;
   }
 
-  async delete(id: string): Promise<void> {
-    const { deletedCount } = await commentCollection.deleteOne({
-      _id: new ObjectId(id),
+  async delete(id: string) {
+    const { deletedCount } = await CommentModel.deleteOne({
+      _id: new Types.ObjectId(id),
     });
 
-    if (deletedCount < 1) {
-      throw new RepositoryNotFoundError(errorMessages.noExist);
-    }
+    return deletedCount > 0;
+  }
 
-    return;
+  async saveComment(commentDocument: TCommentDocument) {
+    await commentDocument.save();
   }
 }

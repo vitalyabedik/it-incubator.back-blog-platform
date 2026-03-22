@@ -1,6 +1,4 @@
 import { inject, injectable } from 'inversify';
-import { randomUUID } from 'crypto';
-import { add } from 'date-fns/add';
 import { BcryptService } from '../../auth/adapters/bcrypt.service';
 import { TAPIErrorResult } from '../../core/types/error';
 import { TUserCreateInput } from '../routes/input/user-create.input';
@@ -33,8 +31,8 @@ export class UsersService {
         passwordHash,
         emailConfirmation: {
           isConfirmed: true,
-          confirmationCode: randomUUID(),
-          expirationDate: add(new Date(), { hours: 1 }).toISOString(),
+          confirmationCode: '',
+          expirationDate: null,
         },
       },
     });
@@ -44,6 +42,5 @@ export class UsersService {
 
   async delete(id: string): Promise<void> {
     await this.usersRepository.delete(id);
-    return;
   }
 }

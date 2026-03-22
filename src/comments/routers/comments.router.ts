@@ -4,6 +4,7 @@ import { paramsIdValidationMiddleware } from '../../core/middlewares/validation/
 import { accessTokenMiddleware } from '../../auth/middlewares/access-token.guard-middleware';
 import { routersPaths } from '../../core/constants/paths';
 import { commentInputDtoMiddleware } from '../middlewares/comment.input-dto.middleware';
+import { likeInputModelMiddleware } from '../../likes/middleware/like-input-model.middleware';
 import { iocContainer } from '../../composition-root';
 import { CommentsController } from '../controller/comments.controller';
 
@@ -24,7 +25,15 @@ commentsRouter
     paramsIdValidationMiddleware,
     commentInputDtoMiddleware,
     inputValidationResultMiddleware,
-    commentsController.updateComment.bind(commentsController),
+    commentsController.updateCommentById.bind(commentsController),
+  )
+  .put(
+    `${routersPaths.byId}${routersPaths.likeStatus}`,
+    accessTokenMiddleware,
+    paramsIdValidationMiddleware,
+    likeInputModelMiddleware,
+    inputValidationResultMiddleware,
+    commentsController.updateCommentLikeStatus.bind(commentsController),
   )
   .delete(
     routersPaths.byId,

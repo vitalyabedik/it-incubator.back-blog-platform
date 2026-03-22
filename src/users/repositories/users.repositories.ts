@@ -1,76 +1,52 @@
 import { injectable } from 'inversify';
-import { ObjectId } from 'mongodb';
-import { userCollection } from '../../db/mongo.db';
+import { Types } from 'mongoose';
+import { TUser, TUserDocument, UserModel } from '../model/user.model';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { errorMessages } from '../constants/texts';
-import { TUserDB } from '../domain/userDB';
-import { TUserRepositoryOutput } from './output/user-repository.output';
 
 @injectable()
 export class UsersRepository {
   constructor() {}
 
-  async create(newUser: TUserDB): Promise<string> {
-    const insertResult = await userCollection.insertOne(newUser);
+  async create(userData: Omit<TUser, '_id'>): Promise<string> {
+    const { id } = await UserModel.create(userData);
 
-    return insertResult.insertedId.toString();
-  }
-
-  async updateUserById(id: string, updatedUser: TUserDB): Promise<boolean> {
-    const { modifiedCount } = await userCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updatedUser },
-    );
-
-    return modifiedCount > 0;
-  }
-
-  async updateUserPasswordByUserId(id: string, passwordHash: string) {
-    const { modifiedCount } = await userCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { passwordHash }, $unset: { passwordRecovery: '' } },
-    );
-
-    return modifiedCount > 0;
+    return id;
   }
 
   async delete(id: string): Promise<void> {
-    const { deletedCount } = await userCollection.deleteOne({
-      _id: new ObjectId(id),
+    const { deletedCount } = await UserModel.deleteOne({
+      _id: new Types.ObjectId(id),
     });
 
     if (deletedCount < 1) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
-
-    return;
   }
 
-  async findUserById(id: string): Promise<TUserRepositoryOutput | null> {
-    return await userCollection.findOne({ _id: new ObjectId(id) });
+  async findUserById(id: string): Promise<TUserDocument | null> {
+    return UserModel.findById(id).exec();
   }
 
   async findUserByLoginOrEmail(
     loginOrEmail: string,
-  ): Promise<TUserRepositoryOutput | null> {
-    return await userCollection.findOne({
-      $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
-    });
+  ): Promise<TUserDocument | null> {
+    return UserModel.findOne({
+      $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
+    }).exec();
   }
 
   async findUserByConfirmationCode(
     code: string,
-  ): Promise<TUserRepositoryOutput | null> {
-    return await userCollection.findOne({
-      'emailConfirmation.confirmationCode': code,
-    });
+  ): Promise<TUserDocument | null> {
+    return UserModel.findOne({ 'emailConfirmation.confirmationCode': code });
   }
 
-  async findUserByRecoveryCode(
-    code: string,
-  ): Promise<TUserRepositoryOutput | null> {
-    return await userCollection.findOne({
-      'passwordRecovery.recoveryCode': code,
-    });
+  async findUserByRecoveryCode(code: string): Promise<TUserDocument | null> {
+    return UserModel.findOne({ 'passwordRecovery.recoveryCode': code });
+  }
+
+  async saveUser(user: TUserDocument) {
+    await user.save();
   }
 }

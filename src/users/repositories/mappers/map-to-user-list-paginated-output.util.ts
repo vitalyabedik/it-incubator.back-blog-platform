@@ -1,9 +1,10 @@
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
-import { TUserQueryRepositoryOutput } from '../output/user-query-repository.output';
 import { TUserListPaginatedOutput } from '../output/user-list-paginated.output';
+import { TUserMapInput } from '../../model/user.model';
+import { mapToUserOutput } from './map-to-user-output.util';
 
 export const mapToUserListPaginatedOutput = (
-  users: TUserQueryRepositoryOutput[],
+  users: TUserMapInput[],
   meta: {
     pagination: TPaginationMeta;
   },
@@ -16,11 +17,6 @@ export const mapToUserListPaginatedOutput = (
     pagesCount: Math.ceil(totalCount / pageSize),
     totalCount: totalCount,
 
-    items: users.map((user) => ({
-      id: user._id.toString(),
-      login: user.login,
-      email: user.email,
-      createdAt: user.createdAt,
-    })),
+    items: users.map(mapToUserOutput),
   };
 };

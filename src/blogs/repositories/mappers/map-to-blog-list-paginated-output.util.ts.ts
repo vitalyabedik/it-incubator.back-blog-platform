@@ -1,9 +1,10 @@
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
-import { TBlogQueryRepositoryOutput } from '../output/blog-query-repository.output';
+import { TBlog } from '../../model/blog.model';
 import { TBlogListPaginatedOutput } from '../output/blog-list-paginated.output';
+import { mapToBlogOutput } from './map-to-blog-output.util';
 
 export const mapToBlogListPaginatedOutput = (
-  blogs: TBlogQueryRepositoryOutput[],
+  blogs: TBlog[],
   meta: {
     pagination: TPaginationMeta;
   },
@@ -16,13 +17,6 @@ export const mapToBlogListPaginatedOutput = (
     pagesCount: Math.ceil(totalCount / pageSize),
     totalCount: totalCount,
 
-    items: blogs.map((blog) => ({
-      id: blog._id.toString(),
-      name: blog.name,
-      description: blog.description,
-      websiteUrl: blog.websiteUrl,
-      createdAt: blog.createdAt,
-      isMembership: blog.isMembership,
-    })),
+    items: blogs.map(mapToBlogOutput),
   };
 };

@@ -8,4 +8,5 @@ export enum EAuthValidationField {
   LOGIN = 'login',
   EMAIL = 'email',
   REFRESH_TOKEN = 'refreshToken',
+  DEVICE_ID = 'deviceId',
 }

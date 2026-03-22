@@ -1,9 +1,11 @@
-import { TDeviceDB } from '../../domain/deviceDB';
+import { TUserDeviceSession } from '../../model/user-device-session.model';
 import { TDeviceOutput } from '../output/device.output';
 
-export const mapToDeviceOutput = (deviceDb: TDeviceDB): TDeviceOutput => ({
+export const mapToDeviceOutput = (
+  deviceDb: TUserDeviceSession,
+): TDeviceOutput => ({
   ip: deviceDb.ip,
   title: deviceDb.deviceName,
   deviceId: deviceDb.deviceId,
-  lastActiveDate: new Date(deviceDb.iat * 1000).toISOString(),
+  lastActiveDate: deviceDb.iat.toISOString(),
 });

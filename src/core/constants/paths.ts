@@ -32,6 +32,7 @@ export const routersPaths = {
     commentsByPostId: '/:id/comments',
   },
   comments: '/comments',
+  likeStatus: '/like-status',
   testing: '/testing',
   resetDb: '/all-data',
 };

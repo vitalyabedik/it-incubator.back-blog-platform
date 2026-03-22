@@ -5,7 +5,7 @@ import { EUserDeviceSessionField } from '../constants/errors';
 import { errorMessages } from '../constants/texts';
 import { UserDeviceSessionRepository } from '../repositories/user-device-session.repositories';
 import { TSaveUserDeviceSessionParams } from './params/save-user-device-session.params';
-import { TUpdateSessionParams } from './params/update-user-device-session.params';
+import { convertUnixTimeToDate } from '../../core/utils/convert-unix-time-to-date';
 
 @injectable()
 export class UserDeviceSessionService {
@@ -26,28 +26,20 @@ export class UserDeviceSessionService {
       deviceId,
       deviceName,
       ip,
-      iat: decodedRefreshToken!.iat,
-      expirationAt: decodedRefreshToken!.exp,
-      expirationDate: new Date(decodedRefreshToken!.exp * 1000),
+      iat: convertUnixTimeToDate(decodedRefreshToken!.iat),
+      expirationAt: convertUnixTimeToDate(decodedRefreshToken!.exp),
     };
 
-    await this.userDeviceSessionRepository.addUserDeviceSession(
-      userDeviceSession,
-    );
-  }
+    const id =
+      await this.userDeviceSessionRepository.addUserDeviceSession(
+        userDeviceSession,
+      );
 
-  async updateUserSession({ prevIat, ip, refreshToken }: TUpdateSessionParams) {
-    const decodedRefreshToken =
-      await this.jwtService.decodeRefreshToken(refreshToken);
-
-    return await this.userDeviceSessionRepository.updateUserDeviceSession({
-      deviceId: decodedRefreshToken!.deviceId,
-      prevIat,
-      ip,
-      iat: decodedRefreshToken!.iat,
-      expirationAt: decodedRefreshToken!.exp,
-      expirationDate: new Date(decodedRefreshToken!.exp * 1000),
-    });
+    return {
+      status: EResultStatus.Success,
+      data: { id },
+      extensions: [],
+    };
   }
 
   async deleteUserSessionsExceptTheCurrent(refreshToken: string) {
@@ -57,15 +49,34 @@ export class UserDeviceSessionService {
     await this.userDeviceSessionRepository.deleteUserDeviceSessionListExceptTheCurrent(
       decodedRefreshToken!.deviceId,
     );
+
+    return {
+      status: EResultStatus.Success,
+      data: null,
+      extensions: [],
+    };
   }
 
   async deleteUserSessionByRefreshToken(refreshToken: string) {
     const decodedRefreshToken =
       await this.jwtService.decodeRefreshToken(refreshToken);
 
-    await this.userDeviceSessionRepository.deleteUserDeviceSessionByDeviceId(
-      decodedRefreshToken!.deviceId,
-    );
+    const isDeleted =
+      await this.userDeviceSessionRepository.deleteUserDeviceSessionByDeviceId(
+        decodedRefreshToken!.deviceId,
+      );
+    if (!isDeleted) {
+      return {
+        status: EResultStatus.NotFound,
+        data: null,
+        extensions: [
+          {
+            field: EUserDeviceSessionField.DEVICE_ID,
+            message: errorMessages.notFound,
+          },
+        ],
+      };
+    }
 
     return {
       status: EResultStatus.Success,
@@ -81,7 +92,8 @@ export class UserDeviceSessionService {
     deviceId: string;
     refreshToken: string;
   }) {
-    const decodedToken = await this.jwtService.decodeRefreshToken(refreshToken);
+    const decodedToken =
+      await this.jwtService.decodeRefreshToken(refreshToken)!;
 
     const sessionForDeleting =
       await this.userDeviceSessionRepository.getUserDeviceSessionByFilter({
@@ -101,12 +113,8 @@ export class UserDeviceSessionService {
         ],
       };
 
-    const isMySession = Boolean(
-      await this.userDeviceSessionRepository.getUserDeviceSessionByFilter({
-        deviceId,
-        userId: decodedToken!.userId,
-      }),
-    );
+    const isMySession =
+      sessionForDeleting.userId === String(decodedToken?.userId);
 
     if (!isMySession)
       return {

@@ -24,6 +24,7 @@ import { CommentsQueryRepository } from './comments/repositories/comments-query.
 import { CommentsRepository } from './comments/repositories/comments.repositories';
 import { CommentsService } from './comments/application/comments.service';
 import { CommentsController } from './comments/controller/comments.controller';
+import { LikesRepository } from './likes/repositories/likes.repositories';
 
 export const iocContainer = new Container();
 
@@ -73,3 +74,7 @@ iocContainer.bind(CommentsQueryRepository).toSelf().inSingletonScope();
 iocContainer.bind(CommentsRepository).toSelf().inSingletonScope();
 iocContainer.bind(CommentsService).toSelf().inSingletonScope();
 iocContainer.bind(CommentsController).toSelf().inSingletonScope();
+/**
+ * likes
+ */
+iocContainer.bind(LikesRepository).toSelf().inSingletonScope();
