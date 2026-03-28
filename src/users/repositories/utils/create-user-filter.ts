@@ -1,6 +1,6 @@
 import { QueryFilter } from 'mongoose';
 import { TUserQueryInput } from '../../routes/input/user-query.input';
-import { TUser } from '../../model/user.model';
+import { TUser } from '../../types/user.types';
 
 type TUserFilter = QueryFilter<TUser> & {
   login?: {

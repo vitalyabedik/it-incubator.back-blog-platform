@@ -1,22 +1,19 @@
-import { TUser, TUserDocument } from '../../model/user.model';
 import { TUserCreateInput } from '../../routes/input/user-create.input';
+import { TUser, TUserDocument } from '../../types/user.types';
 
 type TArgs = {
   userDto: TUserCreateInput;
-  extraDBFields: Pick<
-    TUserDocument,
-    'passwordHash' | 'emailConfirmation' | 'passwordRecovery'
-  >;
+  extraDBFields: Pick<TUserDocument, 'emailConfirmation' | 'passwordRecovery'>;
 };
 
-export const mapToDbUser = ({
+export const mapToDocumentUser = ({
   userDto,
   extraDBFields,
-}: TArgs): Omit<TUser, '_id'> => ({
+}: TArgs): TUser => ({
   login: userDto.login,
   email: userDto.email,
+  passwordHash: userDto.passwordHash,
   createdAt: new Date(),
-  passwordHash: extraDBFields.passwordHash,
   emailConfirmation: {
     isConfirmed: extraDBFields.emailConfirmation.isConfirmed,
     confirmationCode: extraDBFields.emailConfirmation.confirmationCode,

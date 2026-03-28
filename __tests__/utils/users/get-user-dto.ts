@@ -1,6 +1,6 @@
-import { TUserCreateInput } from '../../../src/users/routes/input/user-create.input';
+import { TUserCreateRequestInput } from '../../../src/users/routes/input/user-create.input';
 
-export const getUserDto = (): TUserCreateInput => {
+export const getUserDto = (): TUserCreateRequestInput => {
   return {
     login: 'newuser',
     password: 'userpassword',

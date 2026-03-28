@@ -1,7 +1,7 @@
-import { TBlog } from '../../model/blog.model';
+import { TBlog } from '../../types/blog.types';
 import { TBlogCreateInput } from '../../routers/input/blog-create.input';
 
-export const mapToDbBlog = (dto: TBlogCreateInput): Omit<TBlog, '_id'> => ({
+export const mapToDocumentBlog = (dto: TBlogCreateInput): TBlog => ({
   name: dto.name,
   description: dto.description,
   websiteUrl: dto.websiteUrl,

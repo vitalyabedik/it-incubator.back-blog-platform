@@ -1,9 +1,10 @@
+import { Types } from 'mongoose';
 import { ELikeStatus } from '../../../likes/constants/like-status';
-import { TComment } from '../../model/comment.model';
+import { TComment } from '../../types/comments.types';
 import { TCommentOutput } from '../output/comment.output';
 
 type TArgs = {
-  comment: TComment;
+  comment: { _id: Types.ObjectId } & TComment;
   likeStatus: ELikeStatus;
 };
 

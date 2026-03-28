@@ -70,11 +70,13 @@ export class CommentsController {
     res: Response,
   ) {
     const userId = req.user?.id!;
+    const login = req.login!;
     const commentId = req.params.id;
     const likeStatus = req.body.likeStatus;
 
     const result = await this.commentsService.updateCommentLikeStatus({
       userId,
+      login,
       commentId,
       likeStatus,
     });

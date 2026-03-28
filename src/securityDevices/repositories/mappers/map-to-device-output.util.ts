@@ -1,11 +1,12 @@
-import { TUserDeviceSession } from '../../model/user-device-session.model';
+import { Types } from 'mongoose';
+import { TUserDeviceSession } from '../../types/user-device-session.types';
 import { TDeviceOutput } from '../output/device.output';
 
-export const mapToDeviceOutput = (
-  deviceDb: TUserDeviceSession,
-): TDeviceOutput => ({
-  ip: deviceDb.ip,
-  title: deviceDb.deviceName,
-  deviceId: deviceDb.deviceId,
-  lastActiveDate: deviceDb.iat.toISOString(),
+type TArgs = { _id: Types.ObjectId } & TUserDeviceSession;
+
+export const mapToDeviceOutput = (deviceDocument: TArgs): TDeviceOutput => ({
+  ip: deviceDocument.ip,
+  title: deviceDocument.deviceName,
+  deviceId: deviceDocument.deviceId,
+  lastActiveDate: deviceDocument.iat.toISOString(),
 });

@@ -10,9 +10,8 @@ import { TUserMeOutput } from './output/user-me.output';
 import { mapToUserListPaginatedOutput } from './mappers/map-to-user-list-paginated-output.util';
 import { mapToUserOutput } from './mappers/map-to-user-output.util';
 import { mapToMeUserOutput } from './mappers/map-to-me-user-output.util';
-import { TUserMapInput, UserModel } from '../model/user.model';
-
-const CREATED_MESSAGE = '_id login email createdAt';
+import { UserModel } from '../model/user.model';
+import { TUserMapInput } from '../types/user.types';
 
 @injectable()
 export class UsersQueryRepository {
@@ -26,7 +25,6 @@ export class UsersQueryRepository {
 
     const [items, totalCount] = await Promise.all([
       UserModel.find(filter)
-        .select(CREATED_MESSAGE)
         .lean<TUserMapInput[]>()
         .sort(sort)
         .skip(skip)
@@ -34,6 +32,7 @@ export class UsersQueryRepository {
         .exec(),
       UserModel.countDocuments(filter).exec(),
     ]);
+
     const userListOutput = mapToUserListPaginatedOutput(items, {
       pagination: {
         page: queryDto.pageNumber,
@@ -46,29 +45,23 @@ export class UsersQueryRepository {
   }
 
   async getUserById(id: string): Promise<TUserOutput> {
-    const res = await UserModel.findById(id)
-      .select(CREATED_MESSAGE)
-      .lean<TUserMapInput>()
-      .exec();
-    if (!res) {
+    const user = await UserModel.findById(id).lean().exec();
+    if (!user) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
 
-    const userOutput = mapToUserOutput(res);
+    const userOutput = mapToUserOutput(user);
 
     return userOutput;
   }
 
   async getUserMeById(id: string): Promise<TUserMeOutput> {
-    const res = await UserModel.findById(id)
-      .select(CREATED_MESSAGE)
-      .lean<TUserMapInput>()
-      .exec();
-    if (!res) {
+    const user = await UserModel.findById(id).lean().exec();
+    if (!user) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
 
-    const userMeOutput = mapToMeUserOutput(res);
+    const userMeOutput = mapToMeUserOutput(user);
 
     return userMeOutput;
   }

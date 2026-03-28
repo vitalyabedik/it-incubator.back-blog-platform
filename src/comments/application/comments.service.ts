@@ -3,16 +3,17 @@ import { CommentsRepository } from '../repositories/comments.repositories';
 import { TCommentUpdateInput } from '../routers/input/comment-update.input';
 import { PostsQueryRepository } from '../../posts/repositories/posts-query.repositories';
 import { UsersQueryRepository } from '../../users/repositories/users-query.repositories';
-import { mapToDbComment } from '../repositories/mappers/map-to-db-comment.util';
 import { TCreateCommentByPostIdParams } from './params/create-comment-by-postId.params';
 import { LikesRepository } from '../../likes/repositories/likes.repositories';
 import { EResultStatus } from '../../core/constants/resultCode';
 import { validationMessages } from '../constants/validation';
 import { TCommentUpdateLikeStatusInput } from '../routers/input/comment-update-like-status.input';
 import { ELikeStatus } from '../../likes/constants/like-status';
-import { mapToDbLike } from '../../likes/mappers/map-to-db-like.util';
 import { errorMessages as postErrorMessages } from '../../posts/constants/texts';
 import { errorMessages } from '../constants/texts';
+import { CommentModel } from '../model/comment.model';
+import { LikeModel } from '../../likes/model/like.model';
+import { TLikeDocument } from '../../likes/types/like.types';
 
 @injectable()
 export class CommentsService {
@@ -31,17 +32,37 @@ export class CommentsService {
     postId,
     dto,
   }: TCreateCommentByPostIdParams) {
-    await this.postsQueryRepository.getPostById(postId);
+    const post = await this.postsQueryRepository.getPostById({
+      id: postId,
+      userId,
+    });
+    if (!post) {
+      return {
+        data: null,
+        status: EResultStatus.NotFound,
+        extensions: [
+          {
+            field: null,
+            message: postErrorMessages.notFound,
+          },
+        ],
+        errorMessage: postErrorMessages.notFound,
+      };
+    }
 
     const user = await this.usersQueryRepository.getUserById(userId);
 
-    const newDbComment = mapToDbComment({ user, postId, dto });
+    const commentDocument = await CommentModel.createCommentInstance({
+      userData: { userId, userLogin: user.login },
+      postId,
+      commentData: dto,
+    });
 
-    const commentId = await this.commentsRepository.create(newDbComment);
+    await this.commentsRepository.saveComment(commentDocument);
 
     return {
       status: EResultStatus.Success,
-      data: { commentId },
+      data: { commentId: commentDocument._id.toString() },
       extensions: [],
     };
   }
@@ -62,7 +83,7 @@ export class CommentsService {
       };
     }
 
-    if (comment.commentatorInfo.userId !== userId) {
+    if (!comment.isCommentOwner(userId)) {
       return {
         data: null,
         status: EResultStatus.Forbidden,
@@ -76,9 +97,9 @@ export class CommentsService {
       };
     }
 
-    comment.content = content;
+    const commentDocument = comment.updateComment(content);
 
-    await this.commentsRepository.saveComment(comment);
+    await this.commentsRepository.saveComment(commentDocument);
 
     return {
       status: EResultStatus.Success,
@@ -89,6 +110,7 @@ export class CommentsService {
 
   async updateCommentLikeStatus({
     userId,
+    login,
     commentId,
     likeStatus,
   }: TCommentUpdateLikeStatusInput) {
@@ -107,7 +129,7 @@ export class CommentsService {
       };
     }
 
-    const parentId = comment.id;
+    const parentId = comment._id.toString();
 
     const like = await this.likesRepository.findLikeByFilter({
       parentId,
@@ -123,18 +145,18 @@ export class CommentsService {
         };
       }
 
-      const newDbLike = mapToDbLike({ userId, parentId, likeStatus });
+      const likeDocument = await LikeModel.createLikeInstance({
+        authorId: userId,
+        login,
+        parentId,
+        likeStatus,
+      });
 
-      if (likeStatus === ELikeStatus.Like) {
-        comment.likesInfo.likesCount += 1;
-      }
+      const commentDocument =
+        comment.updateCommentLikesByIncomingLikeStatus(likeStatus);
 
-      if (likeStatus === ELikeStatus.Dislike) {
-        comment.likesInfo.dislikesCount += 1;
-      }
-
-      await this.likesRepository.createLike(newDbLike);
-      await this.commentsRepository.saveComment(comment);
+      await this.likesRepository.saveLike(likeDocument);
+      await this.commentsRepository.saveComment(commentDocument);
 
       return {
         status: EResultStatus.Success,
@@ -151,47 +173,16 @@ export class CommentsService {
       };
     }
 
-    if (like.status === ELikeStatus.Like) {
-      if (likeStatus === ELikeStatus.Dislike) {
-        comment.likesInfo.dislikesCount += 1;
-        comment.likesInfo.likesCount -= 1;
-      }
+    const commentDocument =
+      comment.updateCommentLikesByIncomingLikeStatusAndLike({
+        like: like as unknown as TLikeDocument,
+        likeStatus,
+      });
 
-      if (likeStatus === ELikeStatus.None) {
-        comment.likesInfo.likesCount -= 1;
-      }
-    }
+    const likeDocument = like.updateLikeStatus(likeStatus);
 
-    if (like.status === ELikeStatus.Dislike) {
-      if (likeStatus === ELikeStatus.Like) {
-        comment.likesInfo.likesCount += 1;
-        comment.likesInfo.dislikesCount -= 1;
-      }
-
-      if (likeStatus === ELikeStatus.None) {
-        comment.likesInfo.dislikesCount -= 1;
-      }
-    }
-
-    if (like.status === ELikeStatus.None) {
-      if (likeStatus === ELikeStatus.Like) {
-        comment.likesInfo.likesCount += 1;
-      }
-
-      if (likeStatus === ELikeStatus.Dislike) {
-        comment.likesInfo.dislikesCount += 1;
-      }
-    }
-
-    comment.likesInfo.likesCount = Math.max(0, comment.likesInfo.likesCount);
-    comment.likesInfo.dislikesCount = Math.max(
-      0,
-      comment.likesInfo.dislikesCount,
-    );
-    like.status = likeStatus;
-
-    await this.likesRepository.save(like);
-    await this.commentsRepository.saveComment(comment);
+    await this.likesRepository.saveLike(likeDocument);
+    await this.commentsRepository.saveComment(commentDocument);
 
     return {
       status: EResultStatus.Success,
@@ -216,7 +207,7 @@ export class CommentsService {
       };
     }
 
-    if (comment.commentatorInfo.userId !== userId) {
+    if (!comment.isCommentOwner(userId)) {
       return {
         data: null,
         status: EResultStatus.Forbidden,

@@ -1,6 +1,6 @@
 import { QueryFilter } from 'mongoose';
 import { TGetUserDeviceSessionBuFilterRepository } from '../input/get-user-device-session-by-filter-repository.input';
-import { TUserDeviceSession } from '../../model/user-device-session.model';
+import { TUserDeviceSession } from '../../types/user-device-session.types';
 
 export const createUserDeviceSessionFilter = ({
   deviceId,

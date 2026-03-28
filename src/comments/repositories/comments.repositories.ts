@@ -1,10 +1,7 @@
 import { injectable } from 'inversify';
 import { Types } from 'mongoose';
-import {
-  CommentModel,
-  TComment,
-  TCommentDocument,
-} from '../model/comment.model';
+import { CommentModel } from '../model/comment.model';
+import { TCommentDocument } from '../types/comments.types';
 
 @injectable()
 export class CommentsRepository {
@@ -12,12 +9,6 @@ export class CommentsRepository {
 
   async findCommentById(id: string) {
     return await CommentModel.findById(id);
-  }
-
-  async create(newComment: Omit<TComment, '_id'>): Promise<string> {
-    const { id } = await CommentModel.create(newComment);
-
-    return id;
   }
 
   async delete(id: string) {

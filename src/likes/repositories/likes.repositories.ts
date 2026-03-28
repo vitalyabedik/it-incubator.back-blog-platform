@@ -1,6 +1,7 @@
 import { injectable } from 'inversify';
-import { LikeModel, TLike, TLikeDocument } from '../model/like.model';
+import { LikeModel } from '../model/like.model';
 import { TLikeQueryInput } from './input/like-query.input';
+import { TLikeDocument } from '../types/like.types';
 
 @injectable()
 export class LikesRepository {
@@ -8,13 +9,7 @@ export class LikesRepository {
     return await LikeModel.findOne({ parentId, authorId });
   }
 
-  async createLike(blog: Omit<TLike, '_id'>) {
-    const { id } = await LikeModel.create(blog);
-
-    return id;
-  }
-
-  async save(likeDocument: TLikeDocument) {
+  async saveLike(likeDocument: TLikeDocument) {
     await likeDocument.save();
   }
 }

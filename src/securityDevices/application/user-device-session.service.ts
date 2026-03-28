@@ -6,6 +6,7 @@ import { errorMessages } from '../constants/texts';
 import { UserDeviceSessionRepository } from '../repositories/user-device-session.repositories';
 import { TSaveUserDeviceSessionParams } from './params/save-user-device-session.params';
 import { convertUnixTimeToDate } from '../../core/utils/convert-unix-time-to-date';
+import { UserDeviceSessionModel } from '../model/user-device-session.model';
 
 @injectable()
 export class UserDeviceSessionService {
@@ -30,14 +31,14 @@ export class UserDeviceSessionService {
       expirationAt: convertUnixTimeToDate(decodedRefreshToken!.exp),
     };
 
-    const id =
-      await this.userDeviceSessionRepository.addUserDeviceSession(
+    const userDeviceSessionDocument =
+      await UserDeviceSessionModel.createUserDevicesSessionInstance(
         userDeviceSession,
       );
 
     return {
       status: EResultStatus.Success,
-      data: { id },
+      data: { id: userDeviceSessionDocument._id.toString() },
       extensions: [],
     };
   }
@@ -95,12 +96,12 @@ export class UserDeviceSessionService {
     const decodedToken =
       await this.jwtService.decodeRefreshToken(refreshToken)!;
 
-    const sessionForDeleting =
+    const userDeviceSession =
       await this.userDeviceSessionRepository.getUserDeviceSessionByFilter({
         deviceId,
       });
 
-    if (!sessionForDeleting)
+    if (!userDeviceSession)
       return {
         status: EResultStatus.NotFound,
         errorMessage: errorMessages.notFound,
@@ -113,10 +114,7 @@ export class UserDeviceSessionService {
         ],
       };
 
-    const isMySession =
-      sessionForDeleting.userId === String(decodedToken?.userId);
-
-    if (!isMySession)
+    if (userDeviceSession.checkIsForeignSession(decodedToken!.userId))
       return {
         status: EResultStatus.Forbidden,
         errorMessage: errorMessages.noCurrentOwner,

@@ -13,6 +13,7 @@ const REFRESH_TOKEN_VERIFY_ERROR_MESSAGE =
 
 type TAccessTokenArgs = {
   userId: string;
+  login: string;
 };
 
 type TRefreshTokenArgs = TAccessTokenArgs & {

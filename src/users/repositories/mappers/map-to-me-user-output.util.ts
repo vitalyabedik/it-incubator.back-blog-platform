@@ -1,4 +1,4 @@
-import { TUserMapInput } from '../../model/user.model';
+import { TUserMapInput } from '../../types/user.types';
 import { TUserMeOutput } from '../output/user-me.output';
 
 export const mapToMeUserOutput = (
