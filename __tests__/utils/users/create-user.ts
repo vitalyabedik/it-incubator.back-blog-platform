@@ -2,14 +2,14 @@ import request from 'supertest';
 import { Express } from 'express';
 import { USERS_PATH } from '../../../src/core/constants/paths';
 import { EHttpStatus } from '../../../src/core/constants/http';
-import { TUserCreateInput } from '../../../src/users/routes/input/user-create.input';
+import { TUserCreateRequestInput } from '../../../src/users/routes/input/user-create.input';
 import { TUserOutput } from '../../../src/users/repositories/output/user.output';
 import { getUserDto } from './get-user-dto';
 
 type TCreateUserArgs = {
   app: Express;
   authToken: string;
-  userDto?: TUserCreateInput;
+  userDto?: TUserCreateRequestInput;
 };
 
 export const createUser = async ({
@@ -17,7 +17,7 @@ export const createUser = async ({
   authToken,
   userDto,
 }: TCreateUserArgs): Promise<TUserOutput> => {
-  const defaultUserData: TUserCreateInput = getUserDto();
+  const defaultUserData: TUserCreateRequestInput = getUserDto();
 
   const testUserData = { ...defaultUserData, ...userDto };
 

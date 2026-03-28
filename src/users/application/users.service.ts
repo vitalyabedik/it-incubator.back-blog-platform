@@ -1,10 +1,8 @@
 import { inject, injectable } from 'inversify';
 import { BcryptService } from '../../auth/adapters/bcrypt.service';
-import { TAPIErrorResult } from '../../core/types/error';
-import { TUserCreateInput } from '../routes/input/user-create.input';
+import { TUserCreateRequestInput } from '../routes/input/user-create.input';
 import { UsersRepository } from '../repositories/users.repositories';
-import { checkIsUniqueLoginAndEmail } from '../repositories/validation/user.repositories-unique-loginAndEmail.validation';
-import { mapToDbUser } from '../repositories/mappers/map-to-db-user.util';
+import { UserModel } from '../model/user.model';
 
 @injectable()
 export class UsersService {
@@ -13,31 +11,25 @@ export class UsersService {
     @inject(UsersRepository) private usersRepository: UsersRepository,
   ) {}
 
-  async create(dto: TUserCreateInput): Promise<string | TAPIErrorResult> {
+  async create(
+    dto: TUserCreateRequestInput,
+  ): Promise<string | { isExist: true; byField: 'login' | 'email' }> {
     const { login, email, password } = dto;
 
-    const isUniquerOrError = await checkIsUniqueLoginAndEmail({
-      usersRepository: this.usersRepository,
-      login,
-      email,
-    });
-    if (typeof isUniquerOrError !== 'boolean') return isUniquerOrError;
+    const checkInputUser = await UserModel.checkIsUserExist(dto);
+    if (checkInputUser.isExist) return checkInputUser;
 
     const passwordHash = await this.bcryptService.generateHash(password);
 
-    const newDbUser = mapToDbUser({
-      userDto: dto,
-      extraDBFields: {
-        passwordHash,
-        emailConfirmation: {
-          isConfirmed: true,
-          confirmationCode: '',
-          expirationDate: null,
-        },
-      },
+    const userDocument = await UserModel.createUserInstance({
+      login,
+      email,
+      passwordHash,
     });
 
-    return this.usersRepository.create(newDbUser);
+    await this.usersRepository.saveUser(userDocument);
+
+    return userDocument._id.toString();
   }
 
   async delete(id: string): Promise<void> {

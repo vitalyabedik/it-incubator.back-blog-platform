@@ -1,6 +1,6 @@
 import { QueryFilter } from 'mongoose';
 import { TBlogQueryInput } from '../../routers/input/blog-query.input';
-import { TBlog } from '../../model/blog.model';
+import { TBlog } from '../../types/blog.types';
 
 type TBlogFilter = QueryFilter<TBlog> & {
   name?: {

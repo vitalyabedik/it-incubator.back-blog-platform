@@ -2,7 +2,7 @@ import { inject, injectable } from 'inversify';
 import { BlogsRepository } from '../repositories/blogs.repositories';
 import { TBlogCreateInput } from '../routers/input/blog-create.input';
 import { TBlogUpdateInput } from '../routers/input/blog-update.input';
-import { mapToDbBlog } from '../repositories/mappers/map-to-db-blog.util';
+import { BlogModel } from '../model/blog.model';
 
 @injectable()
 export class BlogsService {
@@ -12,19 +12,19 @@ export class BlogsService {
   ) {}
 
   async create(dto: TBlogCreateInput): Promise<string> {
-    const newDbBlog = mapToDbBlog(dto);
+    const newDocumentBlog = await BlogModel.createBlogInstance(dto);
 
-    return this.blogsRepository.create(newDbBlog);
+    await this.blogsRepository.saveBlog(newDocumentBlog);
+
+    return newDocumentBlog._id.toString();
   }
 
   async update(id: string, dto: TBlogUpdateInput): Promise<void> {
     const blog = await this.blogsRepository.findBlogById(id);
 
-    blog.name = dto.name;
-    blog.description = dto.description;
-    blog.websiteUrl = dto.websiteUrl;
+    const updatedBlog = blog.updateBlog(dto);
 
-    await this.blogsRepository.saveBlog(blog);
+    await this.blogsRepository.saveBlog(updatedBlog);
   }
 
   async delete(id: string): Promise<void> {

@@ -10,6 +10,7 @@ import { postInputDtoMiddleware } from '../middlewares/post.input-dto.middleware
 import { postInputQueryMiddleware } from '../middlewares/post.input-query.middleware';
 import { PostsController } from '../controller/posts.controller';
 import { iocContainer } from '../../composition-root';
+import { likeInputModelMiddleware } from '../../likes/middleware/like-input-model.middleware';
 
 const postsController = iocContainer.get(PostsController);
 
@@ -54,6 +55,14 @@ postsRouter
     postInputDtoMiddleware,
     inputValidationResultMiddleware,
     postsController.updatePost.bind(postsController),
+  )
+  .put(
+    `${routersPaths.byId}${routersPaths.likeStatus}`,
+    accessTokenMiddleware,
+    paramsIdValidationMiddleware,
+    likeInputModelMiddleware,
+    inputValidationResultMiddleware,
+    postsController.updatePostLikeStatus.bind(postsController),
   )
   .delete(
     routersPaths.byId,

@@ -104,6 +104,12 @@ describe('Post API', () => {
       blogId: createdPost.blogId,
       blogName: createdBlog.name,
       createdAt: postResponse.createdAt,
+      extendedLikesInfo: {
+        dislikesCount: createdPost.extendedLikesInfo.dislikesCount,
+        likesCount: createdPost.extendedLikesInfo.likesCount,
+        myStatus: createdPost.extendedLikesInfo.myStatus,
+        newestLikes: createdPost.extendedLikesInfo.newestLikes,
+      },
     };
 
     expect(postResponse).toEqual(expectedPostData);

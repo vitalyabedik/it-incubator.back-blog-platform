@@ -1,6 +1,5 @@
 import { inject, injectable } from 'inversify';
 import { randomUUID } from 'crypto';
-import { add } from 'date-fns/add';
 import { UsersRepository } from '../../users/repositories/users.repositories';
 import { TResult } from '../../core/types/result';
 import { BcryptService } from '../adapters/bcrypt.service';
@@ -13,8 +12,7 @@ import { TAuthRegistrationEmailResendingInput } from '../routers/input/auth-regi
 import { EResultStatus } from '../../core/constants/resultCode';
 import { EAuthValidationField } from '../constants/errors';
 import { errorMessages, errorMessageVariant } from '../constants/texts';
-import { mapToDbUser } from '../../users/repositories/mappers/map-to-db-user.util';
-import { TUserCreateInput } from '../../users/routes/input/user-create.input';
+import { TUserCreateRequestInput } from '../../users/routes/input/user-create.input';
 import { UserDeviceSessionService } from '../../securityDevices/application/user-device-session.service';
 import { TAuthRefreshTokenInput } from '../routers/input/auth-refresh-token.input';
 import { TAuthPasswordRecoveryInput } from '../routers/input/auth-password-recovery.input';
@@ -23,7 +21,8 @@ import { TAuthServiceTokensOutput } from './output/auth-service-tokens.output';
 import { TAuthNewPasswordInput } from '../routers/input/auth-new-password.input';
 import { UserDeviceSessionRepository } from '../../securityDevices/repositories/user-device-session.repositories';
 import { convertUnixTimeToDate } from '../../core/utils/convert-unix-time-to-date';
-import { TUser, TUserDocument } from '../../users/model/user.model';
+import { TUserDocument } from '../../users/types/user.types';
+import { UserModel } from '../../users/model/user.model';
 
 @injectable()
 export class AuthService {
@@ -66,10 +65,12 @@ export class AuthService {
 
     const accessToken = await this.jwtService.createAccessToken({
       userId,
+      login: user.login,
     });
     const refreshToken = await this.jwtService.createRefreshToken({
       userId,
       deviceId,
+      login: user.login,
     });
 
     await this.userDeviceSessionService.saveUserSession({
@@ -145,20 +146,26 @@ export class AuthService {
 
     const newAccessToken = await this.jwtService.createAccessToken({
       userId,
+      login: user.login,
     });
     const newRefreshToken = await this.jwtService.createRefreshToken({
       userId,
       deviceId,
+      login: user.login,
     });
 
     const newDecodedRefreshToken =
       await this.jwtService.decodeRefreshToken(refreshToken);
 
-    session.ip = ip;
-    session.iat = convertUnixTimeToDate(newDecodedRefreshToken!.iat);
-    session.expirationAt = convertUnixTimeToDate(newDecodedRefreshToken!.exp);
+    const userDevicesSessionDocument = session.updateUserDeviceSession({
+      ip,
+      iat: convertUnixTimeToDate(newDecodedRefreshToken!.iat),
+      expirationAt: convertUnixTimeToDate(newDecodedRefreshToken!.exp),
+    });
 
-    await this.userDeviceSessionRepository.saveSession(session);
+    await this.userDeviceSessionRepository.saveSession(
+      userDevicesSessionDocument,
+    );
 
     return {
       status: EResultStatus.Success,
@@ -171,33 +178,19 @@ export class AuthService {
   }
 
   async registerUser(
-    registerDto: TUserCreateInput,
+    registerDto: TUserCreateRequestInput,
   ): Promise<TResult<string | null>> {
     const { login, password, email } = registerDto;
 
-    const userLogin = await this.usersRepository.findUserByLoginOrEmail(login);
-    if (userLogin)
+    const result = await UserModel.checkIsUserExist(registerDto);
+    if (result.isExist)
       return {
         status: EResultStatus.BadRequest,
         errorMessage: errorMessageVariant.credentials,
         data: null,
         extensions: [
           {
-            field: EAuthValidationField.LOGIN,
-            message: errorMessages.uniqueUser,
-          },
-        ],
-      };
-
-    const userEmail = await this.usersRepository.findUserByLoginOrEmail(email);
-    if (userEmail)
-      return {
-        status: EResultStatus.BadRequest,
-        errorMessage: errorMessageVariant.credentials,
-        data: null,
-        extensions: [
-          {
-            field: EAuthValidationField.EMAIL,
+            field: result.byField,
             message: errorMessages.uniqueUser,
           },
         ],
@@ -205,29 +198,22 @@ export class AuthService {
 
     const passwordHash = await this.bcryptService.generateHash(password);
 
-    const newDbUser: Omit<TUser, '_id'> = mapToDbUser({
-      userDto: registerDto,
-      extraDBFields: {
+    const { userDocument, confirmationCode } =
+      await UserModel.createUnconfirmedUserInstance({
+        login,
+        email,
         passwordHash,
-        emailConfirmation: {
-          isConfirmed: false,
-          confirmationCode: randomUUID(),
-          expirationDate: add(new Date(), { hours: 1 }),
-        },
-      },
-    });
-
-    const userId = await this.usersRepository.create(newDbUser);
+      });
 
     this.nodemailerService.sendEmail({
-      email: newDbUser.email,
-      code: newDbUser.emailConfirmation?.confirmationCode,
+      email,
+      code: confirmationCode,
       template: registrationExamples.registrationEmail,
     });
 
     return {
       status: EResultStatus.Success,
-      data: userId,
+      data: userDocument._id.toString(),
       extensions: [],
     };
   }
@@ -237,14 +223,9 @@ export class AuthService {
   ): Promise<TResult<null>> {
     const { code } = dto;
 
-    const userDb = await this.usersRepository.findUserByConfirmationCode(code);
+    const user = await this.usersRepository.findUserByConfirmationCode(code);
 
-    if (
-      !userDb ||
-      userDb.emailConfirmation.isConfirmed ||
-      (userDb.emailConfirmation.expirationDate &&
-        userDb.emailConfirmation.expirationDate < new Date())
-    ) {
+    if (!user || user.checkIsConfirmed() || user.checkIsConfirmationExpired()) {
       return {
         data: null,
         status: EResultStatus.BadRequest,
@@ -258,13 +239,9 @@ export class AuthService {
       };
     }
 
-    userDb.emailConfirmation = {
-      isConfirmed: true,
-      confirmationCode: '',
-      expirationDate: null,
-    };
+    const userDocument = user.confirmUser();
 
-    await this.usersRepository.saveUser(userDb);
+    await this.usersRepository.saveUser(userDocument);
 
     return {
       status: EResultStatus.Success,
@@ -279,7 +256,7 @@ export class AuthService {
     const { email } = dto;
 
     const user = await this.usersRepository.findUserByLoginOrEmail(email);
-    if (!user || user.emailConfirmation.isConfirmed) {
+    if (!user || user.checkIsConfirmed()) {
       return {
         data: null,
         status: EResultStatus.BadRequest,
@@ -293,17 +270,13 @@ export class AuthService {
       };
     }
 
-    user.emailConfirmation = {
-      isConfirmed: false,
-      confirmationCode: randomUUID(),
-      expirationDate: add(new Date(), { hours: 1 }),
-    };
+    const userDocument = user.updateUserConfirmationData();
 
-    await this.usersRepository.saveUser(user);
+    await this.usersRepository.saveUser(userDocument);
 
     this.nodemailerService.sendEmail({
       email: user.email,
-      code: user.emailConfirmation?.confirmationCode,
+      code: userDocument.emailConfirmation.confirmationCode,
       template: registrationExamples.registrationConfirmationEmail,
     });
 
@@ -320,19 +293,14 @@ export class AuthService {
     const user = await this.usersRepository.findUserByLoginOrEmail(email);
 
     if (user) {
-      const recoveryCode = randomUUID();
+      const userDocument = user.setPasswordRecoveryData();
 
-      user.passwordRecovery = {
-        recoveryCode,
-        expirationDate: add(new Date(), { hours: 1 }),
-      };
-
-      await this.usersRepository.saveUser(user);
+      await this.usersRepository.saveUser(userDocument);
 
       this.nodemailerService
         .sendEmail({
           email,
-          code: recoveryCode,
+          code: userDocument.passwordRecovery!.recoveryCode,
           template: registrationExamples.recoveryPassword,
         })
         .catch((err) => console.log(err));
@@ -353,9 +321,8 @@ export class AuthService {
 
     if (
       !user ||
-      !user.passwordRecovery ||
-      (user.passwordRecovery.expirationDate &&
-        user.passwordRecovery.expirationDate < new Date())
+      !user.checkIsRecoveryPasswordExist() ||
+      user.checkIsRecoveryPasswordExpired()
     ) {
       return {
         status: EResultStatus.BadRequest,
@@ -372,9 +339,9 @@ export class AuthService {
 
     const passwordHash = await this.bcryptService.generateHash(newPassword);
 
-    user.passwordHash = passwordHash;
+    const userDocument = user.updateUserPassword(passwordHash);
 
-    await this.usersRepository.saveUser(user);
+    await this.usersRepository.saveUser(userDocument);
 
     return {
       status: EResultStatus.Success,
@@ -390,7 +357,7 @@ export class AuthService {
 
     const user =
       await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
-    if (!user || !user.emailConfirmation.isConfirmed) return null;
+    if (!user || !user.checkIsConfirmed()) return null;
 
     const isPassCorrect = await this.bcryptService.checkPassword(
       password,

@@ -1,12 +1,26 @@
+import { Model, model, Schema } from 'mongoose';
 import {
-  HydratedDocument,
-  InferSchemaType,
-  model,
-  Schema,
-  Types,
-} from 'mongoose';
+  TUserDeviceSession,
+  TUserDeviceSessionDocument,
+  TUserDeviceSessionMethods,
+  TUserDeviceSessionStaticMethods,
+} from '../types/user-device-session.types';
+import { TUserDeviceSessionUpdateInput } from '../routers/input/user-device-session-update.input';
+import { TUserDeviceSessionCreateInput } from '../routers/input/user-device-session-create.input';
+import { mapToDeviceDocument } from '../repositories/mappers/map-to-device-document.util';
 
-const userDeviceSessionSchema = new Schema(
+type TUserDeviceSessionModel = Model<
+  TUserDeviceSession,
+  unknown,
+  TUserDeviceSessionMethods
+> &
+  TUserDeviceSessionStaticMethods;
+
+const userDeviceSessionSchema = new Schema<
+  TUserDeviceSession,
+  TUserDeviceSessionModel,
+  TUserDeviceSessionMethods
+>(
   {
     userId: {
       type: String,
@@ -36,14 +50,40 @@ const userDeviceSessionSchema = new Schema(
   { collection: 'device-sessions', versionKey: false },
 );
 
-export type TUserDeviceSession = InferSchemaType<
-  typeof userDeviceSessionSchema
-> & {
-  _id: Types.ObjectId;
-};
-export type TUserDeviceSessionDocument = HydratedDocument<TUserDeviceSession>;
-
-export const UserDeviceSessionModel = model<TUserDeviceSession>(
-  'device-session',
-  userDeviceSessionSchema,
+userDeviceSessionSchema.method(
+  'checkIsForeignSession',
+  function checkIsForeignSession(userId: string) {
+    return this.userId !== userId;
+  },
 );
+
+userDeviceSessionSchema.method(
+  'updateUserDeviceSession',
+  function updateUserDeviceSession(dto: TUserDeviceSessionUpdateInput) {
+    this.ip = dto.ip;
+    this.iat = dto.iat;
+    this.expirationAt = dto.expirationAt;
+
+    return this;
+  },
+);
+
+userDeviceSessionSchema.static(
+  'createUserDevicesSessionInstance',
+  async function createUserDevicesSessionInstance(
+    dto: TUserDeviceSessionCreateInput,
+  ): ReturnType<
+    TUserDeviceSessionStaticMethods['createUserDevicesSessionInstance']
+  > {
+    const newUserDeviceSession = mapToDeviceDocument(dto);
+
+    const userDeviceSessionDocument = await this.create(newUserDeviceSession);
+
+    return userDeviceSessionDocument as unknown as TUserDeviceSessionDocument;
+  },
+);
+
+export const UserDeviceSessionModel = model<
+  TUserDeviceSession,
+  TUserDeviceSessionModel
+>('device-session', userDeviceSessionSchema);

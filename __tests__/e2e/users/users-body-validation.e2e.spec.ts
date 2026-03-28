@@ -3,7 +3,7 @@ import { Express } from 'express';
 import { EHttpStatus } from '../../../src/core/constants/http';
 import { stopDB } from '../../../src/db/mongo.db';
 import { setupTestApp } from '../../utils/setup-test-app';
-import { TUserCreateInput } from '../../../src/users/routes/input/user-create.input';
+import { TUserCreateRequestInput } from '../../../src/users/routes/input/user-create.input';
 import { getUserDto } from '../../utils/users/get-user-dto';
 import { USERS_PATH } from '../../../src/core/constants/paths';
 import {
@@ -15,7 +15,7 @@ describe('User API body validation check', () => {
   let app: Express;
   let authToken: string;
 
-  const correctTestUserData: TUserCreateInput = getUserDto();
+  const correctTestUserData: TUserCreateRequestInput = getUserDto();
   const errorsLength = Object.keys(correctTestUserData).length;
 
   beforeAll(async () => {
@@ -27,7 +27,7 @@ describe('User API body validation check', () => {
   });
 
   it('POST /api/users; не должен создавать user с некорректным body', async () => {
-    const invalidDataSet1: TUserCreateInput = {
+    const invalidDataSet1: TUserCreateRequestInput = {
       login: '',
       password: '',
       email: '',
@@ -42,7 +42,7 @@ describe('User API body validation check', () => {
       errorsLength,
     );
 
-    const invalidDataSet2: TUserCreateInput = {
+    const invalidDataSet2: TUserCreateRequestInput = {
       login: '         ',
       password: '       ',
       email: 'incorrect-email.com',
@@ -57,7 +57,7 @@ describe('User API body validation check', () => {
       errorsLength,
     );
 
-    const invalidDataSet3: TUserCreateInput = {
+    const invalidDataSet3: TUserCreateRequestInput = {
       login: '1'.repeat(USER_LOGIN_MAX_FIELD_LENGTH + 1),
       password: '2'.repeat(USER_PASSWORD_MAX_FIELD_LENGTH + 1),
       email: `incorrect-email@45dfg`,

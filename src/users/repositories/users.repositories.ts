@@ -1,18 +1,13 @@
 import { injectable } from 'inversify';
 import { Types } from 'mongoose';
-import { TUser, TUserDocument, UserModel } from '../model/user.model';
+import { UserModel } from '../model/user.model';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { errorMessages } from '../constants/texts';
+import { TUserDocument } from '../types/user.types';
 
 @injectable()
 export class UsersRepository {
   constructor() {}
-
-  async create(userData: Omit<TUser, '_id'>): Promise<string> {
-    const { id } = await UserModel.create(userData);
-
-    return id;
-  }
 
   async delete(id: string): Promise<void> {
     const { deletedCount } = await UserModel.deleteOne({

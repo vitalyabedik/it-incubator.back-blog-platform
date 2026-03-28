@@ -26,6 +26,9 @@ import { PostsQueryRepository } from '../../posts/repositories/posts-query.repos
 import { TUpdateBlogParams } from './params/update-blog-params';
 import { TBlogUpdateInput } from '../routers/input/blog-update.input';
 import { TDeleteBlogParams } from './params/delete-blog-params';
+import { EResultStatus } from '../../core/constants/resultCode';
+import { resultCodeToHttpException } from '../../core/utils/resultCodeToHttpException';
+import { getUserIdFromAccessToken } from '../../core/utils/get-user-id-from-access-token';
 
 @injectable()
 export class BlogsController {
@@ -114,6 +117,9 @@ export class BlogsController {
     res: Response,
   ) {
     try {
+      const userId =
+        (await getUserIdFromAccessToken(req.headers.authorization)) ||
+        undefined;
       const blogId = req.params.id;
 
       const query = matchedData<TPostQueryInput>(req, {
@@ -127,6 +133,7 @@ export class BlogsController {
       const postList = await this.postsQueryRepository.getPostListByBlogId(
         blogId,
         query,
+        userId,
       );
 
       res.send(postList);
@@ -139,17 +146,23 @@ export class BlogsController {
     req: TRequestWithParamsAndBody<TCreatePostByBlogIdParams, TPostCreateInput>,
     res: Response,
   ) {
-    try {
-      const postId = await this.postsService.createPostByBlogId(
-        req.params.id,
-        req.body,
-      );
+    const blogId = req.params.id;
+    const userId = req.user?.id || undefined;
 
-      const createdPost = await this.postsQueryRepository.getPostById(postId);
+    const result = await this.postsService.create({
+      ...req.body,
+      blogId,
+    });
 
-      res.status(EHttpStatus.CREATED_201).send(createdPost);
-    } catch (error: unknown) {
-      errorsHandler(error, res);
+    if (result.status !== EResultStatus.Success) {
+      return res.sendStatus(resultCodeToHttpException(result.status));
     }
+
+    const createdPost = await this.postsQueryRepository.getPostById({
+      id: result.data!.id,
+      userId,
+    });
+
+    res.status(EHttpStatus.CREATED_201).send(createdPost);
   }
 }

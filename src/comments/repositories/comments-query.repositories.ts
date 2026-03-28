@@ -48,20 +48,31 @@ export class CommentsQueryRepository {
     const { sort, skip, limit } = getPaginationParams(queryDto);
 
     const [items, totalCount] = await Promise.all([
-      CommentModel.find({ postId }).lean().sort(sort).skip(skip).limit(limit),
-      CommentModel.countDocuments({ postId }),
+      CommentModel.find({ postId })
+        .lean()
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      CommentModel.countDocuments({ postId }).exec(),
     ]);
 
     const commentsIds = items.map((c) => c._id.toString());
 
-    const likes = await LikeModel.find({ parentId: { $in: commentsIds } })
-      .lean()
-      .exec();
+    const likes = userId
+      ? await LikeModel.find({
+          parentId: { $in: commentsIds },
+          authorId: userId,
+        })
+          .lean()
+          .exec()
+      : [];
+
+    const likesMap = new Map(likes.map((like) => [like.parentId, like.status]));
 
     const commentListOutput = mapToCommentListPaginatedOutput({
       comments: items,
-      likes,
-      userId,
+      likesMap,
       meta: {
         pagination: {
           page: queryDto.pageNumber,

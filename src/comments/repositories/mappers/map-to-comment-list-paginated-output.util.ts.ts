@@ -1,14 +1,13 @@
+import { Types } from 'mongoose';
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
 import { ELikeStatus } from '../../../likes/constants/like-status';
-import { TLike } from '../../../likes/model/like.model';
-import { TComment } from '../../model/comment.model';
+import { TComment } from '../../types/comments.types';
 import { TCommentListPaginatedOutput } from '../output/comment-list-paginated.output';
 import { mapToCommentOutput } from './map-to-comment-output.util';
 
 type TArgs = {
-  comments: TComment[];
-  likes: TLike[];
-  userId?: string;
+  comments: ({ _id: Types.ObjectId } & TComment)[];
+  likesMap: Map<string, ELikeStatus>;
   meta: {
     pagination: TPaginationMeta;
   };
@@ -16,8 +15,7 @@ type TArgs = {
 
 export const mapToCommentListPaginatedOutput = ({
   comments,
-  likes,
-  userId,
+  likesMap,
   meta,
 }: TArgs): TCommentListPaginatedOutput => {
   const { page, pageSize, totalCount } = meta.pagination;
@@ -29,15 +27,11 @@ export const mapToCommentListPaginatedOutput = ({
     totalCount: totalCount,
 
     items: comments.map((comment) => {
-      const like = likes.find(
-        (like) =>
-          like.parentId === comment._id.toString() && like.authorId === userId,
-      );
+      const myStatus = likesMap.get(comment._id.toString()) || ELikeStatus.None;
 
       return mapToCommentOutput({
         comment,
-        likeStatus:
-          like && like.authorId === userId ? like.status : ELikeStatus.None,
+        likeStatus: myStatus,
       });
     }),
   };

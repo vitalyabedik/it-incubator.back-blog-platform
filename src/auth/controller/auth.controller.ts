@@ -10,7 +10,7 @@ import { routersPaths } from '../../core/constants/paths';
 import { TAuthLoginInput } from '../routers/input/auth-login.input';
 import { TAuthRefreshTokenInput } from '../routers/input/auth-refresh-token.input';
 import { UNKNOWN_DEVICE } from './consts';
-import { TUserCreateInput } from '../../users/routes/input/user-create.input';
+import { TUserCreateRequestInput } from '../../users/routes/input/user-create.input';
 import { UserDeviceSessionService } from '../../securityDevices/application/user-device-session.service';
 import { TAuthRegistrationConfirmationInput } from '../routers/input/auth-registration-confirmation-user.input';
 import { TAuthRegistrationEmailResendingInput } from '../routers/input/auth-registration-email-resending-user.input';
@@ -94,7 +94,10 @@ export class AuthController {
     res.send({ accessToken: result.data?.accessToken });
   }
 
-  async registration(req: TRequestWithBody<TUserCreateInput>, res: Response) {
+  async registration(
+    req: TRequestWithBody<TUserCreateRequestInput>,
+    res: Response,
+  ) {
     const result = await this.authService.registerUser(req.body);
 
     if (result.status !== EResultStatus.Success) {

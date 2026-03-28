@@ -2,31 +2,26 @@ import { injectable } from 'inversify';
 import { Types } from 'mongoose';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { errorMessages } from '../constants/texts';
-import { BlogModel, TBlog, TBlogDocument } from '../model/blog.model';
+import { BlogModel } from '../model/blog.model';
+import { TBlogDocument } from '../types/blog.types';
 
 @injectable()
 export class BlogsRepository {
   constructor() {}
 
   async findBlogById(id: string) {
-    const res = await BlogModel.findById(id);
-    if (!res) {
+    const blog = await BlogModel.findById(id).exec();
+    if (!blog) {
       throw new RepositoryNotFoundError(errorMessages.noExist);
     }
 
-    return res;
-  }
-
-  async create(newDbBlog: Omit<TBlog, '_id'>): Promise<string> {
-    const { id } = await BlogModel.create(newDbBlog);
-
-    return id;
+    return blog;
   }
 
   async delete(id: string): Promise<void> {
     const { deletedCount } = await BlogModel.deleteOne({
       _id: new Types.ObjectId(id),
-    });
+    }).exec();
 
     if (deletedCount < 1) {
       throw new RepositoryNotFoundError(errorMessages.noExist);

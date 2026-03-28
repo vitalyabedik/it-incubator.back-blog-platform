@@ -1,11 +1,8 @@
 import { injectable } from 'inversify';
-import {
-  TUserDeviceSession,
-  TUserDeviceSessionDocument,
-  UserDeviceSessionModel,
-} from '../model/user-device-session.model';
+import { UserDeviceSessionModel } from '../model/user-device-session.model';
 import { TGetUserDeviceSessionBuFilterRepository } from './input/get-user-device-session-by-filter-repository.input';
 import { createUserDeviceSessionFilter } from './utils/create-user-device-session-filter';
+import { TUserDeviceSessionDocument } from '../types/user-device-session.types';
 
 @injectable()
 export class UserDeviceSessionRepository {
@@ -22,14 +19,6 @@ export class UserDeviceSessionRepository {
     if (Object.keys(deviceFilter).length === 0) return null;
 
     return UserDeviceSessionModel.findOne(deviceFilter).exec();
-  }
-
-  async addUserDeviceSession(
-    userDeviceSession: Omit<TUserDeviceSession, '_id'>,
-  ): Promise<string> {
-    const { id } = await UserDeviceSessionModel.create(userDeviceSession);
-
-    return id;
   }
 
   async deleteUserDeviceSessionListExceptTheCurrent(deviceId: string) {

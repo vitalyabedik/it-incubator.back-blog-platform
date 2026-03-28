@@ -1,10 +1,11 @@
+import { Types } from 'mongoose';
 import { TPaginationMeta } from '../../../core/types/pagination-and-sorting';
-import { TBlog } from '../../model/blog.model';
+import { TBlog } from '../../types/blog.types';
 import { TBlogListPaginatedOutput } from '../output/blog-list-paginated.output';
 import { mapToBlogOutput } from './map-to-blog-output.util';
 
 export const mapToBlogListPaginatedOutput = (
-  blogs: TBlog[],
+  blogs: ({ _id: Types.ObjectId } & TBlog)[],
   meta: {
     pagination: TPaginationMeta;
   },

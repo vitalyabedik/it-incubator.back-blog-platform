@@ -1,23 +1,22 @@
-import { TUserOutput } from '../../../users/repositories/output/user.output';
-import { TComment } from '../../model/comment.model';
 import { TCommentCreateInput } from '../../routers/input/comment-create.input';
+import { TComment } from '../../types/comments.types';
 
 type TArgs = {
-  user: TUserOutput;
+  userData: { userId: string; userLogin: string };
   postId: string;
   dto: TCommentCreateInput;
 };
 
-export const mapToDbComment = ({
-  user,
+export const mapToDocumentComment = ({
+  userData,
   postId,
   dto,
-}: TArgs): Omit<TComment, '_id'> => ({
+}: TArgs): TComment => ({
   postId,
   content: dto.content,
   commentatorInfo: {
-    userId: user.id,
-    userLogin: user.login,
+    userId: userData.userId,
+    userLogin: userData.userLogin,
   },
   createdAt: new Date(),
   likesInfo: {

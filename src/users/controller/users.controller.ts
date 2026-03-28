@@ -11,10 +11,12 @@ import { errorsHandler } from '../../core/errors/errors.handler';
 import { TUserQueryInput } from '../routes/input/user-query.input';
 import { setDefaultSortAndPagination } from '../../core/utils/set-default-sort-and-pagination';
 import { UsersService } from '../application/users.service';
-import { TUserCreateInput } from '../routes/input/user-create.input';
+import { TUserCreateRequestInput } from '../routes/input/user-create.input';
 import { EHttpStatus } from '../../core/constants/http';
 import { setDefaultUserFilters } from './utils/set-default-user-filters';
 import { TDeleteUserParams } from './params/delete-user-params';
+import { createErrorMessages } from '../../core/utils/errors';
+import { errorMessages } from '../constants/texts';
 
 @injectable()
 export class UsersController {
@@ -45,14 +47,24 @@ export class UsersController {
     }
   }
 
-  async createUser(req: TRequestWithBody<TUserCreateInput>, res: Response) {
+  async createUser(
+    req: TRequestWithBody<TUserCreateRequestInput>,
+    res: Response,
+  ) {
     try {
       const createdUserIdOrError = await this.usersService.create(req.body);
-      if (
-        typeof createdUserIdOrError !== 'string' &&
-        'errorsMessages' in createdUserIdOrError
-      ) {
-        res.status(EHttpStatus.BAD_REQUEST_400).send(createdUserIdOrError);
+      if (typeof createdUserIdOrError !== 'string') {
+        res.status(EHttpStatus.BAD_REQUEST_400).send(
+          createErrorMessages([
+            {
+              field: createdUserIdOrError.byField,
+              message:
+                createdUserIdOrError.byField === 'login'
+                  ? errorMessages.uniqueLogin
+                  : errorMessages.uniqueEmail,
+            },
+          ]),
+        );
         return;
       }
 

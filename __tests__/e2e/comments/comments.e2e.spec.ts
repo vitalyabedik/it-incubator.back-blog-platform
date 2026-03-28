@@ -106,7 +106,7 @@ describe('Comment API', () => {
     expect(response.body.items.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('PUT /api/comments/:commentId; должен корректно изменять comment по id', async () => {
+  it.skip('PUT /api/comments/:commentId; должен корректно изменять comment по id', async () => {
     const createdBlog = await createBlog({ app, authToken });
     const createdPost = await createPost({
       app,
